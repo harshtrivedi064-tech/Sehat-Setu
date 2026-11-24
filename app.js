@@ -90,6 +90,7 @@ function initApp() {
     setupRouting();
     setupIVR();
     setupWhatsApp();
+    window.SehatSetuHelpNetwork?.initialize();
     startRealTimeUpdates();
     initCharts();
 }
@@ -125,6 +126,9 @@ function navigateTo(page) {
     // Initialize map if switching to map page
     if (page === 'map' && !map) {
         setTimeout(initMap, 100);
+    }
+    if (page === 'help') {
+        window.SehatSetuHelpNetwork?.initialize();
     }
 
     // Initialize page-specific charts

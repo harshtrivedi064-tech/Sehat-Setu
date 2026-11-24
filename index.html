@@ -57,6 +57,10 @@
                     <i class="fas fa-map-marked-alt"></i>
                     <span>Live Map</span>
                 </a>
+                <a href="#" class="menu-item" data-page="help">
+                    <i class="fas fa-truck-medical"></i>
+                    <span>Help Network</span>
+                </a>
                 <a href="#" class="menu-item" data-page="hospitals">
                     <i class="fas fa-hospital"></i>
                     <span>Hospitals</span>
@@ -341,6 +345,107 @@
                         <div class="legend-item"><span class="legend-dot" style="background:#f5576c;"></span> Critical (&gt;85%)</div>
                         <div class="legend-item"><span class="legend-dot" style="background:#4facfe;"></span> Ambulance</div>
                         <div class="legend-item"><span class="legend-line"></span> Patient Route</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== HELP NETWORK PAGE ==================== -->
+            <section class="page" id="page-help">
+                <div class="page-header">
+                    <div>
+                        <h2 class="page-title">Emergency Help Network</h2>
+                        <p class="page-subtitle">Request help and coordinate with approved hospitals</p>
+                    </div>
+                    <div class="page-actions">
+                        <span class="status-badge warning" id="helpNetworkBadge" role="status" aria-live="polite">Checking setup...</span>
+                    </div>
+                </div>
+
+                <div class="help-emergency-banner">
+                    <i class="fas fa-triangle-exclamation"></i>
+                    <div>
+                        <strong>This website is not an emergency dispatch service.</strong>
+                        <span>If someone is in immediate danger in India, call <a href="tel:112">112</a>.</span>
+                    </div>
+                </div>
+
+                <div class="glass-card help-notice" id="helpConfigMessage" role="status" hidden></div>
+                <div class="glass-card help-error" id="helpNetworkError" role="alert" hidden></div>
+
+                <div class="glass-card help-auth-card" id="helpSignedOut" hidden>
+                    <div class="help-auth-icon"><i class="fab fa-google"></i></div>
+                    <h3>Sign in to the Help Network</h3>
+                    <p class="text-muted">Patients can request and track help. Hospital access is granted only to administrator-approved accounts.</p>
+                    <button class="btn-primary" id="helpGoogleSignIn" type="button">
+                        <i class="fab fa-google"></i> Continue with Google
+                    </button>
+                </div>
+
+                <div id="helpSignedIn" hidden>
+                    <div class="glass-card help-account">
+                        <div>
+                            <strong id="helpUserName"></strong>
+                            <span class="text-muted" id="helpUserEmail"></span>
+                            <span class="status-badge connected" id="helpUserRole"></span>
+                        </div>
+                        <button class="btn-secondary" id="helpGoogleSignOut" type="button">Sign out</button>
+                    </div>
+
+                    <div class="glass-card help-notice" id="helpHospitalApprovalNote" hidden>
+                        <strong>Hospital access requires administrator approval.</strong>
+                        <span>Share this account ID with your SehatSetu administrator to register your facility: <code id="helpUserUid"></code></span>
+                    </div>
+
+                    <div id="patientHelpView" hidden>
+                        <div class="glass-card help-form-card">
+                            <h3><i class="fas fa-kit-medical"></i> Request help</h3>
+                            <p class="text-muted">Your name comes from your Google account. Your phone, location and request details will be shared with approved hospitals so they can respond.</p>
+                            <form id="helpRequestForm">
+                                <div class="help-form-grid">
+                                    <label>
+                                        Phone number
+                                        <input class="glass-input-field" name="phone" type="tel" autocomplete="tel" maxlength="20" pattern="[0-9+() -]{7,20}" required>
+                                    </label>
+                                    <label>
+                                        Type of help
+                                        <select class="glass-select" name="emergencyType" required>
+                                            <option value="">Select a type</option>
+                                            <option value="Medical emergency">Medical emergency</option>
+                                            <option value="Accident / injury">Accident / injury</option>
+                                            <option value="Urgent transport">Urgent transport</option>
+                                            <option value="Other urgent help">Other urgent help</option>
+                                        </select>
+                                    </label>
+                                    <label class="help-form-wide">
+                                        Current location
+                                        <textarea class="glass-input-field" name="location" rows="2" maxlength="300" placeholder="Address, area, landmark or directions" required></textarea>
+                                    </label>
+                                    <label class="help-form-wide">
+                                        What help is needed? (avoid sharing unnecessary medical details)
+                                        <textarea class="glass-input-field" name="details" rows="3" maxlength="1000" placeholder="Briefly describe the immediate help needed" required></textarea>
+                                    </label>
+                                </div>
+                                <label class="help-consent">
+                                    <input type="checkbox" name="consent" required>
+                                    <span>I agree to share my name, phone number, location and request with approved hospitals to coordinate help.</span>
+                                </label>
+                                <button class="btn-primary" id="submitHelpRequest" type="submit">
+                                    <i class="fas fa-paper-plane"></i> Send help request
+                                </button>
+                            </form>
+                        </div>
+                        <div class="help-list-section">
+                            <h3>My requests</h3>
+                            <div id="patientHelpRequests" class="help-request-list" aria-live="polite"></div>
+                        </div>
+                    </div>
+
+                    <div id="hospitalHelpView" hidden>
+                        <div class="help-list-section">
+                            <h3><i class="fas fa-hospital-user"></i> Requests needing a response</h3>
+                            <p class="text-muted">Only active requests are shown. Responding assigns the request to your approved facility.</p>
+                            <div id="hospitalHelpRequests" class="help-request-list" aria-live="polite"></div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -878,7 +983,12 @@
     <!-- Notification Toast -->
     <div class="toast-container" id="toastContainer"></div>
 
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
     <script src="map-config.js"></script>
+    <script src="help-network.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

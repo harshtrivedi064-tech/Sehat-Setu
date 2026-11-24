@@ -2054,6 +2054,243 @@ body::after {
 .status-badge.warning { background: rgba(247,183,49,0.2); color: var(--warning); }
 .status-badge.error { background: rgba(245,87,108,0.2); color: var(--danger); }
 
+.help-emergency-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    margin-bottom: 1.25rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid rgba(245,87,108,0.45);
+    border-radius: 12px;
+    background: rgba(245,87,108,0.12);
+    color: var(--text-primary);
+}
+
+.help-emergency-banner > i {
+    margin-top: 0.15rem;
+    color: var(--danger);
+}
+
+.help-emergency-banner div,
+.help-emergency-banner span,
+.help-account > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.help-emergency-banner a {
+    color: var(--danger);
+    font-weight: 700;
+}
+
+.help-notice,
+.help-error {
+    margin-bottom: 1.25rem;
+    padding: 1rem 1.25rem;
+}
+
+.help-notice[hidden],
+.help-error[hidden] {
+    display: none;
+}
+
+.help-notice {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    border-left: 3px solid var(--warning);
+}
+
+.help-error {
+    border-left: 3px solid var(--danger);
+    color: var(--danger);
+}
+
+.help-auth-card {
+    max-width: 620px;
+    margin: 2rem auto;
+    padding: 2rem;
+    text-align: center;
+}
+
+.help-auth-card h3 {
+    margin-bottom: 0.5rem;
+}
+
+.help-auth-card p {
+    max-width: 480px;
+    margin: 0 auto 1.25rem;
+}
+
+.help-auth-icon {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    background: var(--glass-bg);
+    color: var(--primary);
+    font-size: 1.25rem;
+}
+
+.help-account {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    padding: 1rem 1.25rem;
+}
+
+.help-account > div {
+    align-items: flex-start;
+}
+
+.help-account .status-badge {
+    margin-top: 0.25rem;
+}
+
+.help-account .text-muted {
+    font-size: 0.8rem;
+}
+
+.help-form-card {
+    padding: 1.5rem;
+}
+
+.help-form-card h3,
+.help-list-section h3 {
+    margin-bottom: 0.5rem;
+}
+
+.help-form-card > p {
+    max-width: 760px;
+    margin-bottom: 1.25rem;
+}
+
+.help-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.help-form-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.help-form-grid input,
+.help-form-grid select,
+.help-form-grid textarea {
+    width: 100%;
+}
+
+.help-form-grid textarea {
+    resize: vertical;
+}
+
+.help-form-wide {
+    grid-column: 1 / -1;
+}
+
+.help-consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    margin: 1rem 0 1.25rem;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.help-consent input {
+    margin-top: 0.2rem;
+}
+
+.help-list-section {
+    margin-top: 1.75rem;
+}
+
+.help-list-section > .text-muted {
+    margin-bottom: 1rem;
+}
+
+.help-request-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.help-request-card {
+    padding: 1.15rem;
+    border-left: 3px solid var(--warning);
+}
+
+.help-request-card[data-status="dispatched"],
+.help-request-card[data-status="resolved"] {
+    border-left-color: var(--success);
+}
+
+.help-request-card[data-status="cancelled"] {
+    border-left-color: var(--text-muted);
+}
+
+.help-request-card h4 {
+    margin-bottom: 0.35rem;
+}
+
+.help-request-card p {
+    margin: 0.5rem 0;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    overflow-wrap: anywhere;
+}
+
+.help-request-card .help-request-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.help-request-card .status-badge {
+    display: inline-block;
+    margin-bottom: 0.35rem;
+}
+
+.help-request-card .btn-primary,
+.help-request-card .btn-secondary {
+    margin: 0.75rem 0.5rem 0 0;
+}
+
+.help-empty-state {
+    grid-column: 1 / -1;
+    padding: 1.5rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+@media (max-width: 600px) {
+    .help-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .help-form-wide {
+        grid-column: auto;
+    }
+
+    .help-account {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
 .about-content {
     text-align: center;
     padding: 1rem 0;
