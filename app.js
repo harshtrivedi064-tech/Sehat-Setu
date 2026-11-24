@@ -556,13 +556,38 @@ function initMap() {
 
     map = L.map('liveMap', {
         zoomControl: true,
-        attributionControl: false
+        attributionControl: true
     }).setView([26.88, 80.95], 10);
 
     // Dark tile layer
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        maxZoom: 19
-    }).addTo(map);
+    const cartoApiKey = window.SEHATSETU_MAP_CONFIG?.cartoApiKey?.trim();
+    const tileUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+    const mapConnectionStatus = document.getElementById('mapConnectionStatus');
+    let failedTiles = 0;
+    const tileLayer = L.tileLayer(cartoApiKey ? `${tileUrl}?key=${encodeURIComponent(cartoApiKey)}` : tileUrl, {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attribution/">CARTO</a>'
+    });
+
+    tileLayer.on('loading', () => {
+        failedTiles = 0;
+        if (mapConnectionStatus) {
+            mapConnectionStatus.className = 'status-badge warning';
+            mapConnectionStatus.textContent = 'Connecting to CARTO...';
+        }
+    });
+    tileLayer.on('tileerror', () => {
+        failedTiles += 1;
+    });
+    tileLayer.on('load', () => {
+        if (mapConnectionStatus) {
+            mapConnectionStatus.className = failedTiles ? 'status-badge error' : 'status-badge connected';
+            mapConnectionStatus.textContent = failedTiles
+                ? `CARTO tile errors (${failedTiles})`
+                : 'CARTO connected';
+        }
+    });
+    tileLayer.addTo(map);
 
     // Add hospitals
     addHospitalMarkers();
