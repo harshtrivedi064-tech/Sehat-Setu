@@ -681,7 +681,14 @@ async function loadOsmFacilities() {
             osmFacilitiesLoaded = true;
             renderVisibleOsmFacilities();
         } catch (error) {
-            if (status) status.textContent = `OpenStreetMap facilities could not be loaded: ${error.message}`;
+            const demoLayerToggle = document.getElementById('layerHospitals');
+            if (demoLayerToggle && !demoLayerToggle.checked) {
+                demoLayerToggle.checked = true;
+                mapMarkers.forEach(({ marker }) => marker.addTo(map));
+            }
+            if (status) {
+                status.textContent = `OpenStreetMap facilities could not be loaded: ${error.message} Showing illustrative demo capacity markers instead; these are not live facility data.`;
+            }
             if (retryButton) retryButton.hidden = false;
         } finally {
             osmFacilityLoadPromise = null;
