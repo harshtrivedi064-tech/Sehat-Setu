@@ -43,4 +43,4 @@ python -m unittest discover -s backend/tests -v
 
 ## Render deployment
 
-A `render.yaml` Blueprint is included. It configures the FastAPI start command and a persistent disk mounted at `/var/data` for SQLite. Persistent disks may require a paid Render plan. If you do not attach persistent storage, local SQLite data can be lost when an instance is replaced or redeployed. Add `OPENAI_API_KEY` as a secret environment variable in Render only if you want optional generated assistant responses; never commit the key to Git.
+A `render.yaml` Blueprint is included. It configures the FastAPI start command and uses the service's local filesystem for SQLite. This storage is ephemeral: bookings and other database changes may be lost when the service is redeployed or replaced. To retain data, add a persistent disk and set `SEHATSETU_DB_PATH` to its mount path; persistent disks may incur charges. Add `OPENAI_API_KEY` as a secret environment variable in Render only if you want optional generated assistant responses; never commit the key to Git.

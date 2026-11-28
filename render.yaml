@@ -7,11 +7,5 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.7
-      - key: SEHATSETU_DB_PATH
-        value: /var/data/sehatsetu.sqlite3
       - key: OPENAI_MODEL
         value: gpt-4o-mini
-    disk:
-      name: sehat-setu-data
-      mountPath: /var/data
-      sizeGB: 1
