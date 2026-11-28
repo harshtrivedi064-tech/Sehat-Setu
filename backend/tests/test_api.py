@@ -1,5 +1,7 @@
 import tempfile
 import unittest
+import json
+import time
 from io import BytesIO
 from pathlib import Path
 from urllib.parse import parse_qs
@@ -96,9 +98,129 @@ class BackendApiTests(unittest.TestCase):
         appointment = self.client.post("/api/appointments", json={"doctorId":"DOC-001","patientName":"Demo Patient","phone":"9999999999","slot":"Today 11:30 AM"})
         self.assertEqual(appointment.status_code, 201)
         self.assertEqual(appointment.json()["status"], "requested")
-        emergency = self.client.post("/api/emergency-requests", json={"patientName":"Demo Patient","phone":"9999999999","lat":26.85,"lng":80.91,"issue":"Demo request"})
+        self.assertEqual(appointment.json()["consultationType"], "in-person")
+        emergency = self.client.post("/api/emergency-requests", json={
+            "patientName": "Demo Patient",
+            "phone": "9999999999",
+            "pickupAddress": "12 Demo Road, Lucknow",
+            "ambulanceType": "advanced",
+            "lat": 26.85,
+            "lng": 80.91,
+            "issue": "Demo request",
+        })
         self.assertEqual(emergency.status_code, 201)
         self.assertIn("DEMO DISPATCH", emergency.json()["dataLabel"])
+        self.assertEqual(emergency.json()["pickupAddress"], "12 Demo Road, Lucknow")
+        self.assertEqual(emergency.json()["ambulanceType"], "advanced")
+        self.assertEqual(len(self.client.get("/api/emergency-requests").json()), 1)
+
+    def test_emergency_request_accepts_address_without_gps_and_validates_coordinates(self) -> None:
+        request = {
+            "patientName": "Demo Patient",
+            "phone": "9999999999",
+            "pickupAddress": "Market Road, Lucknow",
+            "issue": "Patient transfer",
+        }
+        saved = self.client.post("/api/emergency-requests", json=request)
+        legacy = self.client.post(
+            "/api/emergency-requests",
+            json={
+                "patientName": "Legacy Demo Patient",
+                "phone": "9999999999",
+                "lat": 26.85,
+                "lng": 80.91,
+                "issue": "Legacy demo request",
+            },
+        )
+        partial_coordinates = self.client.post(
+            "/api/emergency-requests",
+            json={**request, "lat": 26.85},
+        )
+
+        self.assertEqual(saved.status_code, 201)
+        self.assertIsNone(saved.json()["lat"])
+        self.assertEqual(saved.json()["ambulanceType"], "basic")
+        self.assertEqual(legacy.status_code, 201)
+        self.assertEqual(legacy.json()["pickupAddress"], "Location not provided")
+        self.assertEqual(partial_coordinates.status_code, 422)
+
+    def test_video_appointment_and_doctor_chat_and_call_requests_persist(self) -> None:
+        appointment = self.client.post(
+            "/api/appointments",
+            json={
+                "doctorId": "DOC-001",
+                "patientName": "Demo Patient",
+                "phone": "9999999999",
+                "slot": "Tomorrow 11:30 AM",
+                "consultationType": "video",
+            },
+        )
+        chat = self.client.post(
+            "/api/doctor-talks",
+            json={
+                "doctorId": "DOC-001",
+                "patientName": "Demo Patient",
+                "phone": "9999999999",
+                "mode": "chat",
+                "message": "I would like to ask about appointment availability.",
+            },
+        )
+        call = self.client.post(
+            "/api/doctor-talks",
+            json={
+                "doctorId": "DOC-001",
+                "patientName": "Demo Patient",
+                "phone": "9999999999",
+                "mode": "video",
+                "message": "Please arrange a demo video call.",
+            },
+        )
+
+        self.assertEqual(appointment.status_code, 201)
+        self.assertEqual(appointment.json()["consultationType"], "video")
+        self.assertEqual(chat.status_code, 201)
+        self.assertEqual(chat.json()["status"], "message-saved")
+        self.assertEqual(call.status_code, 201)
+        self.assertEqual(call.json()["status"], "call-requested")
+        self.assertIn("not connected", call.json()["dataLabel"])
+        self.assertEqual(len(main.list_records("doctor_talks")), 2)
+        self.assertNotIn("doctor_talks", self.client.get("/api/state").json())
+
+    def test_doctor_talk_validation_and_unknown_doctor(self) -> None:
+        invalid = self.client.post(
+            "/api/doctor-talks",
+            json={
+                "doctorId": "DOC-001",
+                "patientName": "Demo Patient",
+                "phone": "call-me",
+                "mode": "chat",
+                "message": "Hello doctor",
+            },
+        )
+        missing = self.client.post(
+            "/api/doctor-talks",
+            json={
+                "doctorId": "unknown",
+                "patientName": "Demo Patient",
+                "phone": "9999999999",
+                "mode": "chat",
+                "message": "Hello doctor",
+            },
+        )
+        invalid_consultation_type = self.client.post(
+            "/api/appointments",
+            json={
+                "doctorId": "DOC-001",
+                "patientName": "Demo Patient",
+                "phone": "9999999999",
+                "slot": "Tomorrow",
+                "consultationType": "telepathy",
+            },
+        )
+
+        self.assertEqual(invalid.status_code, 422)
+        self.assertEqual(missing.status_code, 404)
+        self.assertEqual(invalid_consultation_type.status_code, 422)
 
     def test_ambulance_gps_and_emergency_assistant(self) -> None:
         gps = self.client.post("/api/ambulances/AMB-01/location", json={"lat":26.9,"lng":80.95,"status":"on-duty"})
@@ -191,3 +313,63 @@ class BackendApiTests(unittest.TestCase):
         self.assertEqual(first.json()["attribution"], "© OpenStreetMap contributors")
         self.assertEqual(second.json(), first.json())
         fetch.assert_called_once()
+
+    def test_request_models_reject_extra_fields_and_invalid_phone_numbers(self) -> None:
+        appointment = self.client.post(
+            "/api/appointments",
+            json={
+                "doctorId": "DOC-001",
+                "patientName": "Demo Patient",
+                "phone": "call-me",
+                "slot": "Today 11:30 AM",
+            },
+        )
+        extra = self.client.post(
+            "/api/emergency-requests",
+            json={
+                "patientName": "Demo Patient",
+                "phone": "9999999999",
+                "lat": 26.85,
+                "lng": 80.91,
+                "issue": "Demo request",
+                "secret": "not accepted",
+            },
+        )
+
+        self.assertEqual(appointment.status_code, 422)
+        self.assertEqual(extra.status_code, 422)
+
+    def test_malformed_osm_response_is_a_gateway_error(self) -> None:
+        with patch(
+            "backend.main.urlopen",
+            return_value=BytesIO(b'{"elements":"invalid"}'),
+        ):
+            with self.assertRaises(HTTPException) as error:
+                main.fetch_osm_facilities()
+
+        self.assertEqual(error.exception.status_code, 502)
+
+    def test_stale_osm_cache_is_used_when_overpass_is_down(self) -> None:
+        stale_payload = {
+            "source": "OpenStreetMap",
+            "attribution": "© OpenStreetMap contributors",
+            "attributionUrl": "https://www.openstreetmap.org/copyright",
+            "licence": "ODbL",
+            "fetchedAt": "2020-01-01T00:00:00+00:00",
+            "facilities": [],
+        }
+        with main.database_connection() as connection:
+            connection.execute(
+                """INSERT INTO map_cache (cache_key, fetched_at, payload)
+                   VALUES (?, ?, ?)""",
+                (main.OSM_CACHE_KEY, time.time() - 30 * 24 * 60 * 60, json.dumps(stale_payload)),
+            )
+
+        with patch(
+            "backend.main.fetch_osm_facilities",
+            side_effect=HTTPException(status_code=502, detail="Overpass unavailable"),
+        ):
+            response = self.client.get("/api/map/facilities")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), stale_payload)

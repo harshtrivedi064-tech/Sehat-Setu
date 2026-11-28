@@ -11,7 +11,9 @@ python -m uvicorn backend.main:app --reload
 
 Open `http://127.0.0.1:8000`. The API is available under `/api`; interactive documentation is at `/docs`.
 
-The API exposes `/api/hospitals`, `/api/ambulances`, `/api/stockouts`, `/api/alerts`, `/api/transfers`, and a combined `/api/state` endpoint. Use `PATCH` on hospital, ambulance, stockout, or alert IDs to persist updates; `POST /api/transfers` creates a pending transfer request, and `POST /api/alerts/read` marks all alerts read.
+The API exposes `/api/hospitals`, `/api/ambulances`, `/api/stockouts`, `/api/alerts`, `/api/transfers`, `/api/blood-banks`, `/api/doctors`, and a combined `/api/state` endpoint. Use `PATCH` on hospital, ambulance, stockout, or alert IDs to persist updates; `POST /api/transfers` creates a pending transfer request, and `POST /api/alerts/read` marks all alerts read. `POST /api/appointments` stores an appointment request, while `POST /api/doctor-talks` stores a demo chat message or phone/video call request; these are not delivered to clinicians or confirmed.
+
+The blood-bank group filter and inventory values are sample data and are not live availability. The care directory supports in-person/video appointment requests plus demo messaging and call requests. Do not enter sensitive personal or medical details.
 
 `GET /api/map/facilities` loads mapped hospital, clinic, doctor, and health-centre locations for Uttar Pradesh from OpenStreetMap through Overpass. Results are cached in SQLite for 24 hours. Set `SEHATSETU_OVERPASS_URL` to use another compatible Overpass endpoint. Map locations include OSM attribution and links to their source objects. Availability, patient demand, and ambulance positions are not provided by OpenStreetMap; the map labels any illustrative overlays as demo data and has no live ambulance tracking.
 

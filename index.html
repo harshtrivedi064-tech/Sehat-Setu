@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=2.3">
 </head>
 <body>
     <!-- Loading Screen -->
@@ -66,9 +66,11 @@
                     <span>Patient Routing</span>
                 </a>
                 <a href="#" class="menu-item" data-page="discover"><i class="fas fa-stethoscope"></i><span>Find Care</span></a>
+                <a href="#" class="menu-item" data-page="appointments"><i class="fas fa-calendar-check"></i><span>Appointments</span></a>
+                <a href="#" class="menu-item" data-page="doctor-talk"><i class="fas fa-comments"></i><span>Talk to Doctor</span></a>
                 <a href="#" class="menu-item" data-page="blood"><i class="fas fa-droplet"></i><span>Blood Banks</span></a>
                 <a href="#" class="menu-item" data-page="pharmacy"><i class="fas fa-pills"></i><span>Medicine Finder</span></a>
-                <a href="#" class="menu-item" data-page="ambulance"><i class="fas fa-truck-medical"></i><span>Ambulance Live</span></a>
+                <a href="#" class="menu-item" data-page="ambulance"><i class="fas fa-truck-medical"></i><span>Book Ambulance</span></a>
                 <a href="#" class="menu-item" data-page="assistant"><i class="fas fa-robot"></i><span>AI Health Assistant</span></a>
             </div>
             <div class="menu-section">
@@ -760,17 +762,83 @@
               <div class="health-search glass-card"><label for="careSearch">Disease, doctor or specialty</label><div class="health-search-row"><input id="careSearch" placeholder="e.g. heart disease, cardiology, Dr. Ananya"><button class="btn-primary" id="careSearchBtn"><i class="fas fa-search"></i> Search</button></div></div>
               <div id="careResults" class="health-grid"></div>
             </section>
+            <section class="page" id="page-appointments">
+              <div class="page-header"><div><h2 class="page-title">Book an Appointment</h2><p class="page-subtitle">Choose a doctor and send a demo appointment request. The hospital must confirm directly.</p></div></div>
+              <div class="health-grid doctor-service-grid">
+                <div class="glass-card doctor-service-card">
+                  <span class="blood-kicker"><i class="fas fa-calendar-check"></i> APPOINTMENT REQUEST</span>
+                  <form id="doctorAppointmentForm" class="health-form">
+                    <label for="appointmentDoctor">Choose doctor</label><select id="appointmentDoctor" required></select>
+                    <p id="appointmentDoctorDetails" class="doctor-service-details">Select a doctor to view their details.</p>
+                    <label for="appointmentPatientName">Patient name</label><input id="appointmentPatientName" name="patientName" autocomplete="name" minlength="2" maxlength="120" required>
+                    <label for="appointmentPatientPhone">Contact number</label><input id="appointmentPatientPhone" name="phone" type="tel" autocomplete="tel" minlength="7" maxlength="20" required>
+                    <label for="appointmentSlot">Preferred appointment time</label><input id="appointmentSlot" name="slot" maxlength="80" required>
+                    <label for="appointmentConsultationType">Consultation type</label><select id="appointmentConsultationType" name="consultationType"><option value="in-person">In person</option><option value="video">Video consultation request</option></select>
+                    <button class="btn-primary" type="submit"><i class="fas fa-calendar-check"></i> Request appointment</button>
+                    <p id="appointmentStatus" class="muted-note" aria-live="polite"></p>
+                  </form>
+                </div>
+                <div class="glass-card doctor-service-info"><i class="fas fa-circle-info"></i><h3>What happens next?</h3><p>Your request is saved for this demo only. It does not reserve a real slot or notify the doctor.</p><p>Please contact the hospital directly to confirm availability and fees.</p><span class="demo-label">DEMO ONLY — NOT A CONFIRMED APPOINTMENT</span></div>
+              </div>
+            </section>
+            <section class="page" id="page-doctor-talk">
+              <div class="page-header"><div><h2 class="page-title">Talk to a Doctor</h2><p class="page-subtitle">Send a demo message or request a phone/video call. This page is not connected to clinicians.</p></div></div>
+              <div class="health-grid doctor-service-grid">
+                <div class="glass-card doctor-service-card">
+                  <span class="blood-kicker"><i class="fas fa-comments"></i> DOCTOR CONTACT REQUEST</span>
+                  <form id="doctorTalkForm" class="health-form">
+                    <label for="talkDoctor">Choose doctor</label><select id="talkDoctor" required></select>
+                    <p id="talkDoctorDetails" class="doctor-service-details">Select a doctor to view their details.</p>
+                    <label for="talkPatientName">Patient name</label><input id="talkPatientName" name="patientName" autocomplete="name" minlength="2" maxlength="120" required>
+                    <label for="talkPatientPhone">Contact number</label><input id="talkPatientPhone" name="phone" type="tel" autocomplete="tel" minlength="7" maxlength="20" required>
+                    <label for="talkMode">How would you like to connect?</label><select id="talkMode"><option value="chat">Send a text message</option><option value="phone">Request a phone call</option><option value="video">Request a video call</option></select>
+                    <label for="talkMessage">Message or call request notes</label><textarea id="talkMessage" maxlength="1000" rows="4" placeholder="Briefly describe your request." required></textarea>
+                    <button class="btn-primary" type="submit"><i class="fas fa-paper-plane"></i> Send request</button>
+                    <p id="talkStatus" class="muted-note" aria-live="polite"></p>
+                  </form>
+                </div>
+                <div class="glass-card doctor-service-info"><i class="fas fa-message"></i><h3>Demo message history</h3><div id="doctorTalkTranscript" class="doctor-talk-transcript" aria-live="polite"><p class="muted-note">Your submitted message will appear here. No clinician will reply in this demo.</p></div><p class="doctor-demo-warning">Demo only. Requests are stored locally and are not sent to a clinician. Do not share sensitive medical information.</p></div>
+              </div>
+            </section>
             <section class="page" id="page-blood">
-              <div class="page-header"><div><h2 class="page-title">Blood Bank Availability</h2><p class="page-subtitle">Search sample blood inventory by group. Always call the blood bank to confirm stock and compatibility.</p></div></div>
-              <div class="health-search glass-card"><label for="bloodGroup">Blood group</label><div class="health-search-row"><select id="bloodGroup"><option value="">All blood groups</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select><button class="btn-primary" id="bloodSearchBtn">Find blood banks</button></div></div><div id="bloodResults" class="health-grid"></div>
+              <div class="page-header"><div><h2 class="page-title">Blood Bank Availability</h2><p class="page-subtitle">Browse sample stock by blood group. Always confirm availability and compatibility directly with a blood bank.</p></div></div>
+              <div class="blood-search-panel glass-card">
+                <div class="blood-search-heading"><div><span class="blood-kicker"><i class="fas fa-droplet"></i> BLOOD GROUPS</span><h3>Find a matching blood bank</h3><p>Choose a group to see matching sample centres.</p></div><span class="demo-label">SAMPLE INVENTORY — NOT LIVE</span></div>
+                <div id="bloodGroupOptions" class="blood-group-options" role="group" aria-label="Filter by blood group">
+                  <button class="blood-group-option selected" type="button" data-blood-group="" aria-pressed="true"><span>All groups</span><small>— centres</small></button>
+                </div>
+                <p id="bloodSummary" class="blood-summary" aria-live="polite">Loading sample inventory…</p>
+              </div>
+              <div id="bloodResults" class="health-grid"></div>
             </section>
             <section class="page" id="page-pharmacy">
               <div class="page-header"><div><h2 class="page-title">Medicine & Pharmacy Finder</h2><p class="page-subtitle">Search sample pharmacy listings. Stock and prices are illustrative and require confirmation.</p></div></div>
               <div class="health-search glass-card"><label for="medicineSearch">Medicine name</label><div class="health-search-row"><input id="medicineSearch" placeholder="e.g. Paracetamol 500mg"><button class="btn-primary" id="medicineSearchBtn">Search medicine</button></div></div><div id="medicineResults" class="health-grid"></div>
             </section>
             <section class="page" id="page-ambulance">
-              <div class="page-header"><div><h2 class="page-title">Ambulance & Emergency</h2><p class="page-subtitle">Request demo dispatch and share a driver's device GPS. This is not connected to 112 or a real ambulance network.</p></div></div>
-              <div class="health-grid"><div class="glass-card"><h3><i class="fas fa-truck-medical"></i> Request an ambulance</h3><form id="emergencyForm" class="health-form"><input name="patientName" placeholder="Patient name" required><input name="phone" placeholder="Contact number" required><input name="issue" placeholder="Brief emergency description" required><button class="btn-primary" type="submit">Get my location & request</button></form><p id="emergencyStatus" class="muted-note"></p></div><div class="glass-card"><h3><i class="fas fa-location-crosshairs"></i> Driver GPS sharing</h3><label for="ambulanceSelect">Demo ambulance</label><select id="ambulanceSelect"></select><button class="btn-primary" id="startGpsBtn">Start sharing this device's GPS</button><button class="btn-secondary" id="stopGpsBtn">Stop sharing</button><p id="gpsStatus" class="muted-note">GPS sharing is off.</p></div></div><div class="glass-card map-card"><div id="ambulanceMap" style="height:380px;border-radius:14px"></div></div><div class="glass-card"><h3>Recent emergency requests</h3><div id="emergencyList"></div></div>
+              <div class="page-header"><div><h2 class="page-title">Ambulance Booking</h2><p class="page-subtitle">Submit a demo request with your pickup details. No real ambulance is dispatched.</p></div><span class="demo-label">DEMO BOOKING — NOT LIVE DISPATCH</span></div>
+              <div class="health-grid doctor-service-grid">
+                <div class="glass-card doctor-service-card">
+                  <span class="blood-kicker"><i class="fas fa-truck-medical"></i> AMBULANCE REQUEST</span>
+                  <form id="ambulanceBookingForm" class="health-form">
+                    <label for="ambulancePatientName">Patient name</label><input id="ambulancePatientName" name="patientName" autocomplete="name" minlength="2" maxlength="120" required>
+                    <label for="ambulancePatientPhone">Contact number</label><input id="ambulancePatientPhone" name="phone" type="tel" autocomplete="tel" minlength="7" maxlength="20" required>
+                    <label for="ambulancePickupAddress">Pickup address / landmark</label><textarea id="ambulancePickupAddress" name="pickupAddress" rows="3" maxlength="300" placeholder="Enter area, street, building and a nearby landmark" required></textarea>
+                    <button class="btn-secondary" id="ambulanceUseLocation" type="button"><i class="fas fa-location-crosshairs"></i> Add my current coordinates (optional)</button>
+                    <p id="ambulanceLocationStatus" class="muted-note" aria-live="polite">You can submit an address without sharing device location.</p>
+                    <label for="ambulanceType">Requested service</label><select id="ambulanceType" name="ambulanceType"><option value="basic">Basic ambulance</option><option value="advanced">Advanced support (demo)</option><option value="patient-transfer">Patient transfer (demo)</option></select>
+                    <label for="ambulanceIssue">Reason for request</label><textarea id="ambulanceIssue" name="issue" rows="3" minlength="2" maxlength="300" placeholder="Briefly describe the situation" required></textarea>
+                    <button class="btn-primary" type="submit"><i class="fas fa-paper-plane"></i> Submit demo request</button>
+                    <p id="ambulanceBookingStatus" class="muted-note" aria-live="polite"></p>
+                  </form>
+                </div>
+                <div class="glass-card doctor-service-info"><i class="fas fa-circle-info"></i><h3>Important</h3><p>This prototype only saves a demo request. It does not contact an ambulance provider, emergency services, or a hospital. Any vehicle ID shown is illustrative and does not mean a vehicle has been dispatched.</p><p>If this is a real emergency in India, call <a href="tel:112">112</a> now. Do not wait for this form.</p><span class="demo-label">NO REAL DISPATCH OR ETA</span></div>
+              </div>
+              <div class="page-header"><div><h3 class="page-title">Demo fleet map</h3><p class="page-subtitle">These markers follow sample routes and do not show actual vehicles.</p></div><span class="demo-label"><i class="fas fa-play-circle"></i> SIMULATION — NOT LIVE GPS</span></div>
+              <div class="glass-card ambulance-live-status"><span class="ambulance-live-dot"></span><strong>Movement simulation active</strong><span id="ambulanceSimulationStatus" aria-live="polite">Loading ambulance locations…</span></div>
+              <div class="glass-card map-card ambulance-map-card"><div id="ambulanceMap" style="height:500px;border-radius:14px"></div></div>
+              <div id="ambulanceLegend" class="ambulance-legend" aria-label="Ambulances shown on map"></div>
+              <div class="assistant-warning ambulance-emergency-note"><i class="fas fa-triangle-exclamation"></i> This map does not show real vehicles or contact emergency services. For a real emergency in India, call 112.</div>
             </section>
             <section class="page" id="page-assistant">
               <div class="page-header"><div><h2 class="page-title">AI Health Assistant</h2><p class="page-subtitle">Preliminary health information and emergency warning guidance. Not a diagnosis.</p></div></div>
@@ -911,6 +979,6 @@
     <!-- Notification Toast -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=2.3"></script>
 </body>
 </html>

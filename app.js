@@ -1514,7 +1514,16 @@ function showToast(type, message) {
 // ============================================
 let ambulanceLeafletMap = null;
 let ambulanceMapMarkers = new Map();
-let driverGpsWatch = null;
+let ambulanceMovementFrame = null;
+let ambulanceSimulationTracks = new Map();
+let ambulanceLastFrame = null;
+const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+let bloodBankCache = [];
+let bloodBanksLoaded = false;
+let selectedBloodGroup = '';
+let careDoctors = [];
+let selectedDoctorId = '';
+let ambulancePickupCoordinates = null;
 
 function safeText(value) {
     return String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
@@ -1523,13 +1532,86 @@ function safeText(value) {
 async function setupPatientTools() {
     document.getElementById('careSearchBtn')?.addEventListener('click', searchCare);
     document.getElementById('careSearch')?.addEventListener('keydown', e => { if (e.key === 'Enter') searchCare(); });
-    document.getElementById('bloodSearchBtn')?.addEventListener('click', loadBloodBanks);
+    document.getElementById('careResults')?.addEventListener('click', event => {
+        const button = event.target.closest('[data-doctor-action]');
+        if (!button) return;
+        openDoctorServicePage(button.dataset.doctorId, button.dataset.doctorAction);
+    });
+    document.getElementById('bloodGroupOptions')?.addEventListener('click', event => {
+        const button = event.target.closest('[data-blood-group]');
+        if (!button) return;
+        selectedBloodGroup = button.dataset.bloodGroup;
+        renderBloodGroupOptions();
+        renderBloodBankResults();
+    });
+    setupDoctorServiceForms();
     document.getElementById('medicineSearchBtn')?.addEventListener('click', loadPharmacies);
-    document.getElementById('emergencyForm')?.addEventListener('submit', submitEmergencyRequest);
-    document.getElementById('startGpsBtn')?.addEventListener('click', startDriverGps);
-    document.getElementById('stopGpsBtn')?.addEventListener('click', stopDriverGps);
     document.getElementById('assistantForm')?.addEventListener('submit', sendAssistantMessage);
-    await Promise.allSettled([searchCare(), loadBloodBanks(), loadPharmacies(), loadAmbulanceOptions(), loadEmergencyRequests()]);
+    await Promise.allSettled([searchCare(), loadBloodBanks(), loadPharmacies()]);
+}
+
+function setupAmbulanceBookingForm() {
+    document.getElementById('ambulanceBookingForm')?.addEventListener('submit', submitAmbulanceBooking);
+    document.getElementById('ambulanceUseLocation')?.addEventListener('click', addAmbulancePickupCoordinates);
+}
+
+function addAmbulancePickupCoordinates() {
+    const status = document.getElementById('ambulanceLocationStatus');
+    if (!navigator.geolocation) {
+        status.textContent = 'This browser does not support location sharing. Enter the pickup address instead.';
+        return;
+    }
+
+    status.textContent = 'Requesting location permission…';
+    navigator.geolocation.getCurrentPosition(
+        position => {
+            ambulancePickupCoordinates = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+            };
+            status.textContent = 'Coordinates added to this demo request. Your pickup address is still required.';
+        },
+        error => {
+            ambulancePickupCoordinates = null;
+            status.textContent = `Could not get your location: ${error.message}. Enter the pickup address to continue.`;
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+}
+
+async function submitAmbulanceBooking(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const status = document.getElementById('ambulanceBookingStatus');
+    const submitButton = form.querySelector('button[type="submit"]');
+    const request = {
+        patientName: document.getElementById('ambulancePatientName').value.trim(),
+        phone: document.getElementById('ambulancePatientPhone').value.trim(),
+        pickupAddress: document.getElementById('ambulancePickupAddress').value.trim(),
+        ambulanceType: document.getElementById('ambulanceType').value,
+        issue: document.getElementById('ambulanceIssue').value.trim(),
+        ...(ambulancePickupCoordinates || {}),
+    };
+
+    submitButton.disabled = true;
+    status.textContent = 'Saving demo ambulance request…';
+    try {
+        const result = await requestApi('/api/emergency-requests', {
+            method: 'POST',
+            body: JSON.stringify(request),
+        });
+        const assignment = result.assignedAmbulance
+            ? ` Illustrative vehicle reference: ${result.assignedAmbulance}.`
+            : ' No demo vehicle is listed as available.';
+        status.textContent = `Demo request ${result.id.slice(0, 8)} saved (${result.status}). This is not a real dispatch.${assignment} For emergencies in India, call 112.`;
+        form.reset();
+        ambulancePickupCoordinates = null;
+        document.getElementById('ambulanceLocationStatus').textContent = 'You can submit an address without sharing device location.';
+    } catch (error) {
+        status.textContent = `Could not save ambulance request: ${error.message}`;
+    } finally {
+        submitButton.disabled = false;
+    }
 }
 
 async function searchCare() {
@@ -1539,35 +1621,183 @@ async function searchCare() {
     host.innerHTML = '<div class="glass-card">Searching healthcare network…</div>';
     try {
         const [hospitals, doctors] = await Promise.all([requestApi('/api/hospitals'), requestApi('/api/doctors')]);
+        careDoctors = doctors;
+        populateDoctorSelects();
         const diseaseTerms = { 'heart disease':'cardiology', 'heart':'cardiology', 'chest':'cardiology', 'brain':'neurology', 'stroke':'neurology', 'paralysis':'neurology', 'bone':'orthopedics', 'fracture':'orthopedics', 'joint pain':'orthopedics', 'child':'pediatrics', 'baby':'pediatrics', 'pregnancy':'gynecology', 'women':'gynecology', 'diabetes':'endocrinology', 'thyroid':'endocrinology', 'skin':'dermatology', 'asthma':'pulmonology', 'lung':'pulmonology', 'breathing':'pulmonology', 'stomach':'gastroenterology', 'digestive':'gastroenterology', 'cancer':'oncology', 'ear':'ent', 'nose':'ent', 'throat':'ent' };
         const specialtyQuery = diseaseTerms[query] || query;
         const matches = hospitals.filter(h => !query || [h.name, h.type, ...(h.specialties || [])].join(' ').toLowerCase().includes(specialtyQuery));
         const doctorMatches = doctors.filter(d => !query || [d.name, d.specialty].join(' ').toLowerCase().includes(specialtyQuery));
         const hospitalCards = matches.map(h => { const listedSpecialties = h.specialties || doctors.filter(d => d.hospitalId === h.id).map(d => d.specialty); return `<article class="glass-card health-card"><div class="health-card-top"><span class="status-pill ${h.status || 'normal'}">${safeText(h.status || 'status unknown')}</span><span class="demo-label">DEMO DATA</span></div><h3>${safeText(h.name)}</h3><p>${safeText(h.type || 'Hospital')} · ${safeText(h.address || 'Address to be confirmed')}</p><div class="health-stats"><span><b>${safeText(h.beds ?? '—')}</b> total beds</span><span><b>${safeText(Math.max(0,(h.beds||0)-(h.bedsOccupied||0)))}</b> estimated beds free</span><span><b>${safeText(h.icuBeds ?? '—')}</b> ICU beds*</span></div><p><b>Departments:</b> ${safeText((listedSpecialties.length ? listedSpecialties : ['Contact hospital']).join(', '))}</p><p><b>Emergency:</b> ${h.emergency24x7 ? 'Listed as 24/7 (verify)' : 'Contact hospital'}</p><small>*Illustrative figures. Not live hospital capacity.</small></article>`; }).join('');
-        const doctorCards = doctorMatches.map(d => { const hospital = hospitals.find(h => h.id === d.hospitalId); return `<article class="glass-card health-card"><span class="demo-label">UNVERIFIED SAMPLE PROFILE</span><h3>${safeText(d.name)}</h3><p>${safeText(d.specialty)} · ${safeText(d.qualification)}</p><p>${safeText(hospital?.name || 'Hospital not listed')}</p><p><b>${safeText(d.availability)}</b> · Next slot: ${safeText(d.nextSlot)}</p><p>Consultation fee: ₹${safeText(d.consultationFee)}</p><button class="btn-secondary" onclick="requestDoctorAppointment('${safeText(d.id)}','${safeText(d.name)}','${safeText(d.nextSlot)}')">Request appointment</button></article>`; }).join('');
+        const doctorCards = doctorMatches.map(d => { const hospital = hospitals.find(h => h.id === d.hospitalId); return `<article class="glass-card health-card doctor-card"><span class="demo-label">UNVERIFIED SAMPLE PROFILE</span><h3>${safeText(d.name)}</h3><p><i class="fas fa-stethoscope"></i> ${safeText(d.specialty)} · ${safeText(d.qualification)}</p><p><i class="fas fa-hospital"></i> ${safeText(hospital?.name || 'Hospital not listed')}</p><p><b>${safeText(d.availability)}</b> · Next slot: ${safeText(d.nextSlot)}</p><p>Consultation fee: ₹${safeText(d.consultationFee)}</p><div class="doctor-actions"><button class="btn-primary" type="button" data-doctor-action="appointments" data-doctor-id="${safeText(d.id)}"><i class="fas fa-calendar-check"></i> Book appointment</button><button class="btn-secondary" type="button" data-doctor-action="doctor-talk" data-doctor-id="${safeText(d.id)}"><i class="fas fa-comment-dots"></i> Talk to doctor</button></div></article>`; }).join('');
         host.innerHTML = `<div class="health-section-title"><h3>Hospitals (${matches.length})</h3></div>${hospitalCards || '<div class="glass-card">No matching hospitals found.</div>'}<div class="health-section-title"><h3>Doctors (${doctorMatches.length})</h3></div>${doctorCards || '<div class="glass-card">No matching doctor profiles found.</div>'}`;
     } catch (error) { host.innerHTML = `<div class="glass-card">Could not load care directory: ${safeText(error.message)}</div>`; }
 }
 
-async function requestDoctorAppointment(id, name, slot) {
-    const patientName = prompt(`Request appointment with ${name}. Enter patient name:`);
-    if (!patientName) return;
-    const phone = prompt('Enter a contact number for this demo request:');
-    if (!phone) return;
-    try {
-        const result = await requestApi('/api/appointments', {method:'POST', body:JSON.stringify({doctorId:id, patientName, phone, slot})});
-        showToast('success', `Appointment request ${result.id.slice(0,8)} saved. Hospital confirmation is required.`);
-    } catch (error) { showToast('danger', error.message); }
+function setupDoctorServiceForms() {
+    document.getElementById('doctorAppointmentForm')?.addEventListener('submit', submitDoctorAppointment);
+    document.getElementById('doctorTalkForm')?.addEventListener('submit', submitDoctorTalk);
+    document.getElementById('appointmentDoctor')?.addEventListener('change', () => updateDoctorDetails('appointmentDoctor', 'appointmentDoctorDetails', true));
+    document.getElementById('talkDoctor')?.addEventListener('change', () => updateDoctorDetails('talkDoctor', 'talkDoctorDetails'));
 }
-window.requestDoctorAppointment = requestDoctorAppointment;
+
+function populateDoctorSelects() {
+    ['appointmentDoctor', 'talkDoctor'].forEach(selectId => {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+        const previousValue = select.value || selectedDoctorId;
+        select.innerHTML = '<option value="">Select a doctor</option>' + careDoctors.map(doctor =>
+            `<option value="${safeText(doctor.id)}">${safeText(doctor.name)} — ${safeText(doctor.specialty)}</option>`
+        ).join('');
+        if (careDoctors.some(doctor => String(doctor.id) === String(previousValue))) {
+            select.value = previousValue;
+        }
+        updateDoctorDetails(selectId, selectId === 'appointmentDoctor' ? 'appointmentDoctorDetails' : 'talkDoctorDetails');
+    });
+}
+
+function updateDoctorDetails(selectId, detailsId, updateSlot = false) {
+    const select = document.getElementById(selectId);
+    const details = document.getElementById(detailsId);
+    const doctor = careDoctors.find(item => String(item.id) === String(select?.value));
+    if (!doctor) {
+        if (details) details.textContent = 'Select a doctor to view their details.';
+        return;
+    }
+    const hospital = HOSPITALS.find(item => item.id === doctor.hospitalId);
+    if (details) details.textContent = `${doctor.specialty} · ${hospital?.name || 'Hospital details unavailable'} · Next listed slot: ${doctor.nextSlot || 'Contact hospital'}`;
+    if (updateSlot) document.getElementById('appointmentSlot').value = doctor.nextSlot || '';
+}
+
+function openDoctorServicePage(doctorId, page) {
+    const doctor = careDoctors.find(item => String(item.id) === String(doctorId));
+    if (!doctor || !['appointments', 'doctor-talk'].includes(page)) {
+        showToast('danger', 'Doctor details are unavailable. Refresh the care directory and try again.');
+        return;
+    }
+    selectedDoctorId = String(doctor.id);
+    populateDoctorSelects();
+    navigateTo(page);
+    const selectId = page === 'appointments' ? 'appointmentDoctor' : 'talkDoctor';
+    const detailsId = page === 'appointments' ? 'appointmentDoctorDetails' : 'talkDoctorDetails';
+    document.getElementById(selectId).value = selectedDoctorId;
+    updateDoctorDetails(selectId, detailsId, page === 'appointments');
+}
+
+async function submitDoctorAppointment(event) {
+    event.preventDefault();
+    const doctorId = document.getElementById('appointmentDoctor').value;
+    const status = document.getElementById('appointmentStatus');
+    status.textContent = 'Saving demo appointment request…';
+    try {
+        const result = await requestApi('/api/appointments', {
+            method: 'POST',
+            body: JSON.stringify({
+                doctorId,
+                patientName: document.getElementById('appointmentPatientName').value.trim(),
+                phone: document.getElementById('appointmentPatientPhone').value.trim(),
+                slot: document.getElementById('appointmentSlot').value.trim(),
+                consultationType: document.getElementById('appointmentConsultationType').value,
+            }),
+        });
+        status.textContent = `Request ${result.id.slice(0, 8)} saved for ${result.slot}. Hospital confirmation is required; this is not a confirmed appointment.`;
+    } catch (error) {
+        status.textContent = `Could not save appointment request: ${error.message}`;
+    }
+}
+
+async function submitDoctorTalk(event) {
+    event.preventDefault();
+    const status = document.getElementById('talkStatus');
+    const mode = document.getElementById('talkMode').value;
+    const doctor = careDoctors.find(item => String(item.id) === String(document.getElementById('talkDoctor').value));
+    if (!doctor) {
+        status.textContent = 'Select a doctor before sending your request.';
+        return;
+    }
+    const message = document.getElementById('talkMessage').value.trim();
+    status.textContent = 'Saving demo request…';
+    try {
+        const result = await requestApi('/api/doctor-talks', {
+            method: 'POST',
+            body: JSON.stringify({
+                doctorId: doctor.id,
+                patientName: document.getElementById('talkPatientName').value.trim(),
+                phone: document.getElementById('talkPatientPhone').value.trim(),
+                mode,
+                message,
+            }),
+        });
+        const modeLabel = mode === 'chat' ? 'Message' : `${mode === 'video' ? 'Video' : 'Phone'} call request`;
+        status.textContent = `${modeLabel} saved for ${doctor.name}. No clinician was notified.`;
+        appendDoctorTalkEntry(`${modeLabel} for ${doctor.name}: ${message}`);
+        document.getElementById('talkMessage').value = '';
+    } catch (error) {
+        status.textContent = `Could not save request: ${error.message}`;
+    }
+}
+
+function appendDoctorTalkEntry(message) {
+    const transcript = document.getElementById('doctorTalkTranscript');
+    transcript.querySelector('.muted-note')?.remove();
+    const entry = document.createElement('p');
+    entry.className = 'doctor-talk-entry';
+    entry.textContent = message;
+    transcript.appendChild(entry);
+}
 
 async function loadBloodBanks() {
-    const host = document.getElementById('bloodResults'); if (!host) return;
-    const group = document.getElementById('bloodGroup')?.value || '';
+    const host = document.getElementById('bloodResults');
+    if (!host) return;
+    if (!bloodBanksLoaded) {
+        document.getElementById('bloodSummary').textContent = 'Loading sample inventory…';
+    }
     try {
-        const banks = await requestApi(`/api/blood-banks${group ? `?group=${encodeURIComponent(group)}` : ''}`);
-        host.innerHTML = banks.map(b => `<article class="glass-card health-card"><span class="demo-label">SAMPLE INVENTORY — CALL TO VERIFY</span><h3>${safeText(b.name)}</h3><p>${safeText(b.address)}</p><div class="blood-grid">${Object.entries(b.inventory || {}).map(([g,n])=>`<span><b>${safeText(g)}</b>${safeText(n)} units</span>`).join('')}</div><p><b>Components:</b> ${safeText((b.components || []).join(', '))}</p><p>${safeText(b.phone)}</p></article>`).join('') || '<div class="glass-card">No matching blood bank records.</div>';
-    } catch (e) { host.textContent = e.message; }
+        if (!bloodBanksLoaded) {
+            bloodBankCache = await requestApi('/api/blood-banks');
+            bloodBanksLoaded = true;
+        }
+        renderBloodGroupOptions();
+        renderBloodBankResults();
+    } catch (error) {
+        document.getElementById('bloodSummary').textContent = 'Could not load blood-bank inventory.';
+        host.textContent = error.message;
+    }
+}
+
+function renderBloodGroupOptions() {
+    const options = document.getElementById('bloodGroupOptions');
+    if (!options) return;
+    const totalCenters = bloodBankCache.length;
+    const allGroups = [['', 'All groups', `${totalCenters} centre${totalCenters === 1 ? '' : 's'}`]];
+    const groupOptions = BLOOD_GROUPS.map(group => {
+        const units = bloodBankCache.reduce((total, bank) => total + Number(bank.inventory?.[group] || 0), 0);
+        return [group, group, `${units} units`];
+    });
+    options.innerHTML = [...allGroups, ...groupOptions].map(([value, label, count]) => {
+        const active = value === selectedBloodGroup;
+        return `<button class="blood-group-option${active ? ' selected' : ''}" type="button" data-blood-group="${safeText(value)}" aria-pressed="${active}"><span>${safeText(label)}</span><small>${safeText(count)}</small></button>`;
+    }).join('');
+}
+
+function renderBloodBankResults() {
+    const host = document.getElementById('bloodResults');
+    if (!host) return;
+    const group = selectedBloodGroup;
+    const matches = group
+        ? bloodBankCache.filter(bank => Number(bank.inventory?.[group] || 0) > 0)
+        : bloodBankCache;
+    const totalUnits = group
+        ? matches.reduce((total, bank) => total + Number(bank.inventory?.[group] || 0), 0)
+        : 0;
+    document.getElementById('bloodSummary').textContent = group
+        ? `${matches.length} sample centre${matches.length === 1 ? '' : 's'} list ${totalUnits} ${group} unit${totalUnits === 1 ? '' : 's'}. Call ahead to verify.`
+        : `${bloodBankCache.length} sample centre${bloodBankCache.length === 1 ? '' : 's'} listed. Select a group to view matching stock.`;
+    host.innerHTML = matches.map(bank => {
+        const inventory = group
+            ? [[group, Number(bank.inventory?.[group] || 0)]]
+            : BLOOD_GROUPS.map(item => [item, Number(bank.inventory?.[item] || 0)]);
+        return `<article class="glass-card health-card blood-bank-card"><div class="health-card-top"><span class="demo-label">SAMPLE INVENTORY</span><span class="blood-units"><i class="fas fa-droplet"></i> ${group ? `${Number(bank.inventory?.[group] || 0)} ${safeText(group)} units` : 'Not live'}</span></div><h3>${safeText(bank.name)}</h3><p class="blood-bank-meta"><i class="fas fa-location-dot"></i> ${safeText(bank.address)}</p><div class="blood-grid">${inventory.map(([bloodType, units]) => `<span${group && bloodType === group ? ' class="blood-match"' : ''}><b>${safeText(bloodType)}</b>${safeText(units)} units</span>`).join('')}</div><div class="blood-bank-components">${(bank.components || []).map(component => `<span>${safeText(component)}</span>`).join('')}</div><p class="blood-bank-call"><i class="fas fa-phone"></i> ${safeText(bank.phone || 'Contact details unavailable')} · Verify stock before visiting</p></article>`;
+    }).join('') || `<div class="glass-card">${group ? `No sample centres currently list ${safeText(group)} stock.` : 'No blood bank records are available.'}</div>`;
 }
 
 async function loadPharmacies() {
@@ -1580,48 +1810,117 @@ async function loadPharmacies() {
 }
 
 async function loadAmbulanceOptions() {
-    const select = document.getElementById('ambulanceSelect'); if (!select) return;
     const ambulances = await requestApi('/api/ambulances');
-    select.innerHTML = ambulances.map(a=>`<option value="${safeText(a.id)}">${safeText(a.id)} · ${safeText(a.status || 'demo vehicle')}</option>`).join('');
     renderAmbulanceMap(ambulances);
+    renderAmbulanceLegend(ambulances);
+    const status = document.getElementById('ambulanceSimulationStatus');
+    if (status) {
+        status.textContent = ambulances.length
+            ? `${ambulances.length} demo ambulances moving along sample routes.`
+            : 'No demo ambulance locations are available.';
+    }
+    return ambulances;
 }
+
+const AMBULANCE_ROUTE_OFFSETS = [[0, 0], [0.012, 0.008], [0.018, -0.004], [0.006, -0.015]];
+const AMBULANCE_MARKER_COLORS = ['#e63946', '#246bfd', '#7b3fe4', '#e68616'];
+const AMBULANCE_ROUTE_SEGMENT_MS = 7000;
 
 function renderAmbulanceMap(ambulances) {
     const node = document.getElementById('ambulanceMap'); if (!node || !window.L) return;
-    if (!ambulanceLeafletMap) { ambulanceLeafletMap = L.map(node).setView([26.8467,80.9462],10); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors'}).addTo(ambulanceLeafletMap); }
-    ambulances.forEach(a => { if (typeof a.lat !== 'number' || typeof a.lng !== 'number') return; const pos=[a.lat,a.lng]; if (ambulanceMapMarkers.has(a.id)) ambulanceMapMarkers.get(a.id).setLatLng(pos); else ambulanceMapMarkers.set(a.id,L.marker(pos).addTo(ambulanceLeafletMap).bindPopup(`${safeText(a.id)} · ${safeText(a.status || 'sample location')}`)); });
-    if (ambulances.length) setTimeout(()=>ambulanceLeafletMap.invalidateSize(),150);
+    if (!ambulanceLeafletMap) {
+        ambulanceLeafletMap = L.map(node).setView([26.8467, 80.9462], 9);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'© OpenStreetMap contributors'}).addTo(ambulanceLeafletMap);
+    }
+
+    const routeBounds = L.latLngBounds([]);
+    ambulances.forEach((ambulance, index) => {
+        if (typeof ambulance.lat !== 'number' || typeof ambulance.lng !== 'number') return;
+        const id = String(ambulance.id);
+        let track = ambulanceSimulationTracks.get(id);
+        if (!track) {
+            const route = AMBULANCE_ROUTE_OFFSETS.map(([latOffset, lngOffset]) => [
+                ambulance.lat + latOffset,
+                ambulance.lng + lngOffset,
+            ]);
+            route.push(route[0]);
+            const color = AMBULANCE_MARKER_COLORS[index % AMBULANCE_MARKER_COLORS.length];
+            const icon = L.divIcon({
+                className: 'ambulance-marker-shell',
+                html: `<span class="ambulance-map-marker" style="--marker-color:${color}"><i class="fas fa-truck-medical"></i></span>`,
+                iconSize: [38, 38],
+                iconAnchor: [19, 19],
+            });
+            const marker = L.marker(route[0], {icon}).addTo(ambulanceLeafletMap);
+            marker.bindPopup(`${safeText(id)} · Demo simulation, not live GPS`);
+            L.polyline(route, {color, weight:3, opacity:0.45, dashArray:'5 7'}).addTo(ambulanceLeafletMap);
+            track = {route, marker, segmentIndex:0, segmentProgress:0};
+            ambulanceSimulationTracks.set(id, track);
+        }
+        track.route.forEach(point => routeBounds.extend(point));
+    });
+
+    if (routeBounds.isValid()) ambulanceLeafletMap.fitBounds(routeBounds, {padding:[32,32], maxZoom:11});
+    if (ambulanceMovementFrame === null && ambulanceSimulationTracks.size) {
+        ambulanceLastFrame = null;
+        ambulanceMovementFrame = requestAnimationFrame(moveDemoAmbulances);
+    }
+    if (ambulances.length) setTimeout(() => ambulanceLeafletMap.invalidateSize(), 150);
 }
 
-async function startDriverGps() {
-    if (!navigator.geolocation) { showToast('danger','Geolocation is not supported by this browser.'); return; }
-    const id = document.getElementById('ambulanceSelect')?.value; if (!id) return;
-    if (driverGpsWatch !== null) navigator.geolocation.clearWatch(driverGpsWatch);
-    document.getElementById('gpsStatus').textContent = 'Waiting for GPS permission…';
-    driverGpsWatch = navigator.geolocation.watchPosition(async pos => {
-        try { await requestApi(`/api/ambulances/${encodeURIComponent(id)}/location`,{method:'POST',body:JSON.stringify({lat:pos.coords.latitude,lng:pos.coords.longitude,status:'on-duty'})}); document.getElementById('gpsStatus').textContent = `GPS shared for ${id}. Accuracy: ±${Math.round(pos.coords.accuracy)} m. Updated ${new Date().toLocaleTimeString()}`; await loadAmbulanceOptions(); }
-        catch(e) { document.getElementById('gpsStatus').textContent = `GPS update failed: ${e.message}`; }
-    }, err => { document.getElementById('gpsStatus').textContent = `Location error: ${err.message}`; }, {enableHighAccuracy:true,maximumAge:5000,timeout:15000});
-}
-function stopDriverGps() { if (driverGpsWatch !== null) navigator.geolocation.clearWatch(driverGpsWatch); driverGpsWatch=null; const el=document.getElementById('gpsStatus'); if(el)el.textContent='GPS sharing stopped on this device.'; }
+function moveDemoAmbulances(timestamp) {
+    if (ambulanceLastFrame === null) ambulanceLastFrame = timestamp;
+    const elapsed = Math.min(timestamp - ambulanceLastFrame, 250);
+    ambulanceLastFrame = timestamp;
 
-async function submitEmergencyRequest(event) {
-    event.preventDefault(); const form=event.currentTarget; const status=document.getElementById('emergencyStatus');
-    if (!navigator.geolocation) { status.textContent='Location is unavailable. In a real emergency call 112.'; return; }
-    status.textContent='Requesting location permission…';
-    navigator.geolocation.getCurrentPosition(async pos => {
-        const data=Object.fromEntries(new FormData(form).entries()); data.lat=pos.coords.latitude; data.lng=pos.coords.longitude;
-        try { const result=await requestApi('/api/emergency-requests',{method:'POST',body:JSON.stringify(data)}); status.textContent=`Demo request ${result.id.slice(0,8)} recorded. Assigned sample ambulance: ${result.assignedAmbulance || 'none available'}. This does NOT dispatch a real ambulance.`; await loadEmergencyRequests(); }
-        catch(e){status.textContent=e.message;}
-    }, err=>{status.textContent=`Could not get location: ${err.message}. If urgent, call 112.`;},{enableHighAccuracy:true,timeout:12000});
+    ambulanceSimulationTracks.forEach(track => {
+        track.segmentProgress += elapsed / AMBULANCE_ROUTE_SEGMENT_MS;
+        while (track.segmentProgress >= 1) {
+            track.segmentProgress -= 1;
+            track.segmentIndex = (track.segmentIndex + 1) % (track.route.length - 1);
+        }
+        const start = track.route[track.segmentIndex];
+        const end = track.route[track.segmentIndex + 1];
+        const progress = track.segmentProgress;
+        track.marker.setLatLng([
+            start[0] + (end[0] - start[0]) * progress,
+            start[1] + (end[1] - start[1]) * progress,
+        ]);
+    });
+
+    ambulanceMovementFrame = requestAnimationFrame(moveDemoAmbulances);
 }
-async function loadEmergencyRequests(){const host=document.getElementById('emergencyList');if(!host)return;try{const items=await requestApi('/api/emergency-requests');host.innerHTML=items.slice().reverse().map(x=>`<div class="medicine-row"><span><b>${safeText(x.patientName)}</b><small>${safeText(x.issue)} · ${safeText(new Date(x.createdAt).toLocaleString())}</small></span><b>${safeText(x.status)}</b><strong>${safeText(x.assignedAmbulance || 'Unassigned')}</strong></div>`).join('')||'<p>No requests yet.</p>';}catch(e){host.textContent=e.message;}}
+
+function renderAmbulanceLegend(ambulances) {
+    const legend = document.getElementById('ambulanceLegend');
+    if (!legend) return;
+    legend.innerHTML = ambulances.map((ambulance, index) => {
+        const color = AMBULANCE_MARKER_COLORS[index % AMBULANCE_MARKER_COLORS.length];
+        return `<div class="ambulance-legend-item"><span class="ambulance-legend-dot" style="--marker-color:${color}"></span><strong>${safeText(ambulance.id)}</strong><span>Moving · demo</span></div>`;
+    }).join('') || '<p class="muted-note">No demo ambulance locations are available.</p>';
+}
 
 async function sendAssistantMessage(event){event.preventDefault();const input=document.getElementById('assistantInput');const chat=document.getElementById('assistantChat');const message=input.value.trim();if(!message)return;chat.insertAdjacentHTML('beforeend',`<div class="assistant-message user">${safeText(message)}</div>`);input.value='';try{const result=await requestApi('/api/assistant',{method:'POST',body:JSON.stringify({message})});chat.insertAdjacentHTML('beforeend',`<div class="assistant-message bot ${result.triage==='emergency'?'urgent':''}"><b>${result.triage==='emergency'?'Emergency warning':'General guidance'}</b><br>${safeText(result.reply)}<small>${safeText(result.disclaimer)}</small></div>`);chat.scrollTop=chat.scrollHeight;}catch(e){chat.insertAdjacentHTML('beforeend',`<div class="assistant-message bot">Assistant unavailable: ${safeText(e.message)}</div>`);}}
 
-// Extend existing navigation for the live GPS map.
+// Initialize the moving demo map only when its page is opened.
 const originalNavigateTo = navigateTo;
-navigateTo = function(page) { originalNavigateTo(page); if(page==='ambulance') setTimeout(()=>{ if(ambulanceLeafletMap) ambulanceLeafletMap.invalidateSize(); else loadAmbulanceOptions().catch(()=>{}); },180); };
+navigateTo = function(page) {
+    originalNavigateTo(page);
+    if (page !== 'ambulance') return;
+    setTimeout(() => {
+        if (ambulanceLeafletMap) {
+            ambulanceLeafletMap.invalidateSize();
+            return;
+        }
+        loadAmbulanceOptions().catch(error => {
+            const status = document.getElementById('ambulanceSimulationStatus');
+            if (status) status.textContent = `Could not load ambulance locations: ${error.message}`;
+        });
+    }, 180);
+};
 
 // Hook into the existing startup sequence without changing its other modules.
-document.addEventListener('DOMContentLoaded', () => { setTimeout(() => setupPatientTools().catch(err => console.error('Patient modules:',err)), 2300); });
+document.addEventListener('DOMContentLoaded', () => {
+    setupAmbulanceBookingForm();
+    setTimeout(() => setupPatientTools().catch(err => console.error('Patient modules:', err)), 2300);
+});

@@ -12,7 +12,8 @@ from urllib.request import Request, urlopen
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 BACKEND_DIR = Path(__file__).resolve().parent
@@ -104,6 +105,8 @@ def normalize_osm_facilities(elements: list[dict]) -> list[dict]:
     seen = set()
 
     for element in elements:
+        if not isinstance(element, dict):
+            continue
         osm_type = element.get("type")
         osm_id = element.get("id")
         key = (osm_type, osm_id)
@@ -112,10 +115,19 @@ def normalize_osm_facilities(elements: list[dict]) -> list[dict]:
         seen.add(key)
 
         tags = element.get("tags", {})
+        if not isinstance(tags, dict):
+            tags = {}
         center = element.get("center", {})
+        if not isinstance(center, dict):
+            center = {}
         lat = element.get("lat", center.get("lat"))
         lng = element.get("lon", center.get("lon"))
-        if lat is None or lng is None:
+        try:
+            lat = float(lat)
+            lng = float(lng)
+        except (TypeError, ValueError):
+            continue
+        if not -90 <= lat <= 90 or not -180 <= lng <= 180:
             continue
 
         facility_type = tags.get("healthcare") or tags.get("amenity") or "healthcare"
@@ -172,12 +184,17 @@ def fetch_osm_facilities() -> list[dict]:
     try:
         with urlopen(request, timeout=100) as response:
             result = json.loads(response.read().decode("utf-8"))
-    except (OSError, TimeoutError, json.JSONDecodeError) as error:
+    except (OSError, TimeoutError, UnicodeDecodeError, json.JSONDecodeError) as error:
         raise HTTPException(
             status_code=502,
             detail="OpenStreetMap facility data is temporarily unavailable",
         ) from error
 
+    if not isinstance(result, dict) or not isinstance(result.get("elements", []), list):
+        raise HTTPException(
+            status_code=502,
+            detail="OpenStreetMap facility data is temporarily unavailable",
+        )
     return normalize_osm_facilities(result.get("elements", []))
 
 
@@ -188,10 +205,22 @@ def get_osm_facility_data() -> dict:
             "SELECT fetched_at, payload FROM map_cache WHERE cache_key = ?",
             (OSM_CACHE_KEY,),
         ).fetchone()
-        if cached and now - cached["fetched_at"] < OSM_CACHE_TTL_SECONDS:
-            return json.loads(cached["payload"])
+        cached_payload = None
+        if cached:
+            try:
+                cached_payload = json.loads(cached["payload"])
+            except json.JSONDecodeError:
+                cached_payload = None
+        if cached and cached_payload is not None and now - cached["fetched_at"] < OSM_CACHE_TTL_SECONDS:
+            return cached_payload
+        stale_payload = cached_payload
 
-    facilities = fetch_osm_facilities()
+    try:
+        facilities = fetch_osm_facilities()
+    except HTTPException:
+        if stale_payload is not None:
+            return stale_payload
+        raise
     fetched_at = datetime.now(timezone.utc).isoformat()
     payload = {
         "source": "OpenStreetMap",
@@ -266,36 +295,141 @@ class TransferCreate(BaseModel):
 
 
 class DoctorCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     name: str = Field(min_length=2, max_length=120)
     hospitalId: int
     specialty: str = Field(min_length=2, max_length=80)
     availability: str = "Availability to be confirmed"
     nextSlot: str = "Contact hospital"
 
+    @field_validator("name", "specialty", "availability", "nextSlot")
+    @classmethod
+    def require_doctor_text(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("Value must not be blank")
+        return normalized
+
+    @field_validator("hospitalId")
+    @classmethod
+    def require_positive_hospital_id(cls, value: int) -> int:
+        if value <= 0:
+            raise ValueError("Hospital ID must be positive")
+        return value
+
 
 class AppointmentCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     doctorId: str
     patientName: str = Field(min_length=2, max_length=120)
     phone: str = Field(min_length=7, max_length=20)
     slot: str = Field(min_length=2, max_length=80)
+    consultationType: Literal["in-person", "video"] = "in-person"
+
+    @field_validator("doctorId", "patientName", "phone", "slot")
+    @classmethod
+    def require_appointment_text(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("Value must not be blank")
+        return normalized
+
+    @field_validator("phone")
+    @classmethod
+    def require_phone_chars(cls, value: str) -> str:
+        if not value.replace("+", "", 1).replace("-", "", 1).replace(" ", "").isdigit():
+            raise ValueError("Phone must contain only digits, spaces, + or -")
+        return value
+
+
+class DoctorTalkCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    doctorId: str = Field(min_length=1, max_length=40)
+    patientName: str = Field(min_length=2, max_length=120)
+    phone: str = Field(min_length=7, max_length=20)
+    mode: Literal["chat", "phone", "video"]
+    message: str = Field(min_length=2, max_length=1000)
+
+    @field_validator("doctorId", "patientName", "phone", "message")
+    @classmethod
+    def require_talk_text(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("Value must not be blank")
+        return normalized
+
+    @field_validator("phone")
+    @classmethod
+    def require_talk_phone_chars(cls, value: str) -> str:
+        if not value.replace("+", "", 1).replace("-", "", 1).replace(" ", "").isdigit():
+            raise ValueError("Phone must contain only digits, spaces, + or -")
+        return value
 
 
 class EmergencyCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     patientName: str = Field(min_length=2, max_length=120)
     phone: str = Field(min_length=7, max_length=20)
-    lat: float = Field(ge=-90, le=90)
-    lng: float = Field(ge=-180, le=180)
+    pickupAddress: str = Field(default="Location not provided", min_length=2, max_length=300)
+    ambulanceType: Literal["basic", "advanced", "patient-transfer"] = "basic"
+    lat: float | None = Field(default=None, ge=-90, le=90)
+    lng: float | None = Field(default=None, ge=-180, le=180)
     issue: str = Field(min_length=2, max_length=300)
+
+    @field_validator("patientName", "phone", "issue")
+    @classmethod
+    def require_emergency_text(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("Value must not be blank")
+        return normalized
+
+    @field_validator("phone")
+    @classmethod
+    def require_emergency_phone_chars(cls, value: str) -> str:
+        if not value.replace("+", "", 1).replace("-", "", 1).replace(" ", "").isdigit():
+            raise ValueError("Phone must contain only digits, spaces, + or -")
+        return value
+
+    @field_validator("pickupAddress")
+    @classmethod
+    def require_pickup_address(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("Pickup address must not be blank")
+        return normalized
+
+    @model_validator(mode="after")
+    def require_complete_coordinates(self) -> "EmergencyCreate":
+        if (self.lat is None) != (self.lng is None):
+            raise ValueError("Both latitude and longitude must be provided together")
+        return self
 
 
 class GPSUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     lat: float = Field(ge=-90, le=90)
     lng: float = Field(ge=-180, le=180)
-    status: str = "on-duty"
+    status: Literal["on-duty", "available", "idle", "offline"] = "on-duty"
 
 
 class AssistantRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     message: str = Field(min_length=2, max_length=2000)
+
+    @field_validator("message")
+    @classmethod
+    def require_assistant_message(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("Message must not be blank")
+        return normalized
 
 
 class AlertReadUpdate(BaseModel):
@@ -311,6 +445,19 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(title="SehatSetu API", version="1.0.0", lifespan=lifespan)
+
+cors_origins = [
+    origin.strip()
+    for origin in os.environ.get("SEHATSETU_CORS_ORIGINS", "").split(",")
+    if origin.strip()
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins,
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
+)
 
 
 @app.get("/api/health")
@@ -393,6 +540,22 @@ def book_appointment(request: AppointmentCreate) -> dict:
 @app.get("/api/appointments")
 def get_appointments() -> list[dict]:
     return list_records("appointments")
+
+
+@app.post("/api/doctor-talks", status_code=201)
+def create_doctor_talk(request: DoctorTalkCreate) -> dict:
+    doctor = find_record("doctors", request.doctorId)
+    if doctor is None:
+        raise HTTPException(status_code=404, detail="Doctor not found")
+    talk = {
+        "id": str(uuid.uuid4()),
+        **request.model_dump(),
+        "status": "message-saved" if request.mode == "chat" else "call-requested",
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+        "dataLabel": "DEMO REQUEST — not connected to a clinician",
+    }
+    save_record("doctor_talks", talk)
+    return talk
 
 
 @app.post("/api/emergency-requests", status_code=201)

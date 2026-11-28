@@ -1065,6 +1065,7 @@
     }
   ],
   "appointments": [],
+  "doctor_talks": [],
   "emergency_requests": [],
   "ambulance_locations": []
 }

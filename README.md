@@ -18,15 +18,15 @@ Open http://127.0.0.1:8000. API documentation is at http://127.0.0.1:8000/docs.
 
 ## New modules
 
-- **Find Care:** searches the seeded hospital directory and doctor profiles by disease-related specialty, doctor name, or specialty. Appointment requests are stored for demonstration.
-- **Blood Banks:** filters sample inventory by blood group and displays component listings.
+- **Find Care:** searches the seeded hospital directory and doctor profiles by disease-related specialty, doctor name, or specialty. Dedicated **Appointments** and **Talk to Doctor** pages store in-person/video appointment requests and demo chat or phone/video call requests.
+- **Blood Banks:** shows per-group sample unit totals, matching centres, and component listings. Inventory must be verified directly.
 - **Medicine Finder:** searches sample pharmacy stock and prescription flags.
-- **Ambulance Live:** displays ambulance coordinates and lets a driver device share browser GPS to the backend. Browser geolocation requires permission and, outside localhost, HTTPS. This is not connected to an actual ambulance operator or emergency dispatch service.
+- **Ambulance Booking:** saves a demo request with patient contact, pickup address, requested service, and an optional browser location. Any assigned vehicle reference and fleet map are illustrative only; no ambulance operator or emergency dispatch service is contacted. In India, call **112** for emergencies.
 - **Health Assistant:** emergency red-flag rules always take precedence. Without an API key, the assistant uses a conservative local fallback. To enable optional OpenAI-generated general health information, set `OPENAI_API_KEY` in the server environment; optionally set `OPENAI_MODEL` (default `gpt-4o-mini`). Symptom text is sent to OpenAI when this option is enabled. Do not send identifying or sensitive patient information. Emergency red flags are handled locally and do not call the model.
 
 ## Data and safety limitations
 
-The doctor, blood-bank, pharmacy, capacity, and inventory records in `backend/seed_data.json` are **illustrative demo data**. They are not verified, live provider feeds. Availability must be confirmed directly with the hospital, doctor, blood bank, or pharmacy. The ambulance request endpoint records a demonstration request only; it does not contact 112, a hospital, or an ambulance fleet. In India, call **112** for emergencies.
+The doctor, blood-bank, pharmacy, capacity, ambulance, and inventory records in `backend/seed_data.json` are **illustrative demo data**. They are not verified, live provider feeds. Appointment requests, chat messages, and call requests are stored locally for demonstration and are not delivered to clinicians or confirmed. Availability must be confirmed directly with the hospital, doctor, blood bank, or pharmacy. Ambulance requests are stored locally for demonstration only; they do not contact 112, a hospital, or an ambulance fleet. In India, call **112** for emergencies.
 
 This repository remains a prototype: it does not yet implement production identity verification, patient authentication/role authorization, clinical validation, ABDM/ABHA integration, payment processing, or legally compliant handling of real patient records. Do not deploy it for real clinical decisions or enter real patient data. Before production, add strong authentication and role-based access, consent and privacy controls, encryption, audit logging, verified provider integrations, rate limiting, secure secrets management, and clinical/safety review.
 

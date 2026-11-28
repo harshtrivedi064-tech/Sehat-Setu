@@ -2385,6 +2385,48 @@ body::after {
 .health-stats b,.blood-grid b{display:block;color:var(--text-primary);font-size:1.05rem}
 .health-section-title{grid-column:1/-1;margin:8px 0 0}
 .blood-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:14px 0}
+.blood-search-panel{padding:24px;margin:18px 0}
+.blood-search-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:18px}
+.blood-search-heading h3{margin:8px 0 5px;color:var(--text-primary)}
+.blood-search-heading p,.blood-summary{margin:0;color:var(--text-secondary);font-size:.88rem}
+.blood-kicker{display:inline-flex;align-items:center;gap:7px;color:#bf3545;font-size:.68rem;font-weight:800;letter-spacing:.08em}
+.blood-group-options{display:grid;grid-template-columns:repeat(9,minmax(78px,1fr));gap:9px;margin:22px 0 14px}
+.blood-group-option{min-height:70px;padding:10px 8px;border:1px solid var(--glass-border);border-radius:12px;background:var(--glass-bg);color:var(--text-primary);font:inherit;text-align:center;cursor:pointer;transition:transform .15s ease,border-color .15s ease,background .15s ease}
+.blood-group-option:hover{transform:translateY(-2px);border-color:#e66a78}
+.blood-group-option.selected{border-color:#d94b5b;background:rgba(217,75,91,.12);box-shadow:0 0 0 2px rgba(217,75,91,.1)}
+.blood-group-option span{display:block;font-weight:800;font-size:1rem}
+.blood-group-option small{display:block;margin-top:5px;color:var(--text-muted);font-size:.67rem}
+.blood-availability{display:flex;align-items:center;gap:8px;margin-top:14px;color:var(--text-secondary);font-size:.82rem}
+.blood-availability strong{color:var(--text-primary)}
+.blood-units{display:inline-flex;align-items:center;gap:7px;padding:8px 11px;border-radius:9px;background:rgba(217,75,91,.1);color:#bf3545;font-weight:800;font-size:.8rem}
+.blood-bank-meta{display:flex;align-items:center;gap:8px;color:var(--text-secondary);font-size:.82rem}
+.blood-bank-components{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.blood-bank-components span{padding:5px 8px;border:1px solid var(--glass-border);border-radius:999px;color:var(--text-secondary);font-size:.7rem}
+.blood-bank-call{display:inline-flex;align-items:center;gap:7px;margin-top:4px;padding:9px 12px;border:1px solid var(--glass-border);border-radius:9px;color:var(--text-muted);font-size:.78rem}
+.ambulance-live-status{display:flex;align-items:center;gap:10px;padding:14px 18px;margin:16px 0;color:var(--text-secondary);font-size:.85rem}
+.ambulance-live-status strong{color:var(--text-primary)}
+.ambulance-live-dot,.ambulance-legend-dot{width:10px;height:10px;flex:0 0 10px;border-radius:50%;background:#20b26b;box-shadow:0 0 0 4px rgba(32,178,107,.14)}
+.ambulance-map-card{padding:12px}
+.ambulance-map-marker{display:flex;width:38px;height:38px;align-items:center;justify-content:center;border:3px solid #fff;border-radius:50%;background:var(--marker-color);color:#fff;font-size:17px;box-shadow:0 3px 12px rgba(0,0,0,.4);animation:ambulanceMarkerPulse 1.8s ease-out infinite}
+.ambulance-marker-shell{border:0!important;background:transparent!important}
+@keyframes ambulanceMarkerPulse{0%,100%{transform:scale(1);box-shadow:0 3px 12px rgba(0,0,0,.4)}50%{transform:scale(1.08);box-shadow:0 3px 14px rgba(0,0,0,.45),0 0 0 7px rgba(255,255,255,.16)}}
+.ambulance-legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:12px 0 18px}
+.ambulance-legend-item{display:flex;align-items:center;gap:9px;padding:12px;border:1px solid var(--glass-border);border-radius:10px;background:var(--glass-bg);color:var(--text-secondary);font-size:.8rem}
+.ambulance-legend-dot{background:var(--marker-color);box-shadow:none}
+.ambulance-legend-item strong{color:var(--text-primary)}
+.ambulance-emergency-note{margin-top:16px}
+.doctor-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:15px}
+.doctor-actions button{flex:1;min-width:145px}
+.doctor-service-grid{grid-template-columns:minmax(0,1.3fr) minmax(260px,.7fr);align-items:start}
+.doctor-service-card,.doctor-service-info{padding:24px}
+.doctor-service-info>i{color:#7255d9;font-size:1.5rem}
+.doctor-service-info h3{margin:12px 0 8px;color:var(--text-primary)}
+.doctor-service-info p{color:var(--text-secondary);font-size:.88rem;line-height:1.55}
+.doctor-service-details{margin:0;padding:11px 12px;border:1px solid var(--glass-border);border-radius:9px;background:var(--glass-bg);color:var(--text-secondary);font-size:.82rem;line-height:1.5}
+.health-form select,.health-form textarea{width:100%;min-width:0;padding:13px 15px;border:1px solid var(--glass-border);border-radius:10px;background:var(--glass-bg);color:var(--text-primary);font:inherit}
+.doctor-talk-transcript{display:grid;gap:9px;margin:12px 0}
+.doctor-talk-entry{margin:0;padding:11px 12px;border:1px solid var(--glass-border);border-radius:10px;background:var(--glass-bg);color:var(--text-primary);font-size:.82rem;line-height:1.5;overflow-wrap:anywhere}
+.doctor-demo-warning{margin:0;padding:11px;border:1px solid rgba(217,75,91,.25);border-radius:9px;background:rgba(217,75,91,.08);color:var(--text-secondary);font-size:.76rem;line-height:1.5}
 .medicine-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--glass-border);font-size:.85rem;color:var(--text-primary)}
 .medicine-row small{display:block;color:var(--text-muted);margin-top:4px}
 .health-form{display:grid;gap:12px;margin-top:16px}
@@ -2396,4 +2438,6 @@ body::after {
 .assistant-message.urgent{border-color:rgba(245,87,108,.55);background:rgba(245,87,108,.12)}
 .assistant-message small{display:block;margin-top:8px;color:var(--text-muted);font-size:.72rem}
 .map-card{padding:16px;margin:18px 0}
-@media(max-width:650px){.health-search-row{flex-direction:column;align-items:stretch}.health-stats{grid-template-columns:1fr 1fr}.blood-grid{grid-template-columns:repeat(2,1fr)}.medicine-row{align-items:flex-start;flex-wrap:wrap}.assistant-message{max-width:96%}}
+@media(max-width:1000px){.blood-group-options{grid-template-columns:repeat(5,minmax(74px,1fr))}}
+@media(max-width:800px){.doctor-service-grid{grid-template-columns:1fr}}
+@media(max-width:650px){.health-search-row{flex-direction:column;align-items:stretch}.health-stats{grid-template-columns:1fr 1fr}.blood-grid{grid-template-columns:repeat(2,1fr)}.blood-group-options{grid-template-columns:repeat(3,minmax(70px,1fr))}.blood-search-heading{flex-direction:column}.doctor-service-card,.doctor-service-info{padding:18px}.ambulance-live-status{align-items:flex-start;flex-wrap:wrap}.medicine-row{align-items:flex-start;flex-wrap:wrap}.assistant-message{max-width:96%}}
