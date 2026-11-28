@@ -1,1 +1,4 @@
-map-config.js
+__pycache__/
+*.py[cod]
+.venv/
+backend/data/

@@ -1,0 +1,1070 @@
+{
+  "hospitals": [
+    {
+      "id": 1,
+      "name": "Balrampur Hospital Lucknow",
+      "type": "district",
+      "lat": 26.8553,
+      "lng": 80.9089,
+      "load": 88,
+      "queue": 62,
+      "waitTime": 48,
+      "doctors": 45,
+      "beds": 600,
+      "bedsOccupied": 528,
+      "medicines": 82,
+      "status": "critical",
+      "specialties": [
+        "Cardiology",
+        "Neurology",
+        "Orthopedics",
+        "General Medicine",
+        "Pediatrics",
+        "Gynecology"
+      ],
+      "icuBeds": 48,
+      "icuOccupied": 42,
+      "emergency24x7": true,
+      "dataLabel": "DEMO DATA \u2014 confirm with hospital",
+      "lastUpdated": "Demo seed record"
+    },
+    {
+      "id": 2,
+      "name": "Ram Manohar Lohia Hospital",
+      "type": "district",
+      "lat": 26.8382,
+      "lng": 80.9346,
+      "load": 76,
+      "queue": 44,
+      "waitTime": 38,
+      "doctors": 38,
+      "beds": 350,
+      "bedsOccupied": 266,
+      "medicines": 90,
+      "status": "busy",
+      "specialties": [
+        "Neurology",
+        "Orthopedics",
+        "General Medicine",
+        "Pediatrics",
+        "Gynecology",
+        "Cardiology"
+      ],
+      "icuBeds": 28,
+      "icuOccupied": 21,
+      "emergency24x7": true,
+      "dataLabel": "DEMO DATA \u2014 confirm with hospital",
+      "lastUpdated": "Demo seed record"
+    },
+    {
+      "id": 3,
+      "name": "Civil Hospital Lucknow",
+      "type": "district",
+      "lat": 26.8491,
+      "lng": 80.9325,
+      "load": 71,
+      "queue": 38,
+      "waitTime": 32,
+      "doctors": 30,
+      "beds": 300,
+      "bedsOccupied": 213,
+      "medicines": 85,
+      "status": "busy",
+      "specialties": [
+        "Orthopedics",
+        "General Medicine",
+        "Pediatrics",
+        "Gynecology",
+        "Cardiology",
+        "Neurology"
+      ],
+      "icuBeds": 24,
+      "icuOccupied": 17,
+      "emergency24x7": true,
+      "dataLabel": "DEMO DATA \u2014 confirm with hospital",
+      "lastUpdated": "Demo seed record"
+    },
+    {
+      "id": 4,
+      "name": "Queen Mary's Hospital",
+      "type": "district",
+      "lat": 26.845,
+      "lng": 80.94,
+      "load": 65,
+      "queue": 28,
+      "waitTime": 25,
+      "doctors": 22,
+      "beds": 250,
+      "bedsOccupied": 163,
+      "medicines": 92,
+      "status": "busy",
+      "specialties": [
+        "General Medicine",
+        "Pediatrics",
+        "Gynecology",
+        "Cardiology",
+        "Neurology",
+        "Orthopedics"
+      ],
+      "icuBeds": 20,
+      "icuOccupied": 13,
+      "emergency24x7": true,
+      "dataLabel": "DEMO DATA \u2014 confirm with hospital",
+      "lastUpdated": "Demo seed record"
+    },
+    {
+      "id": 5,
+      "name": "CHC Mohanlalganj",
+      "type": "chc",
+      "lat": 26.7488,
+      "lng": 80.9079,
+      "load": 42,
+      "queue": 11,
+      "waitTime": 14,
+      "doctors": 7,
+      "beds": 50,
+      "bedsOccupied": 21,
+      "medicines": 88,
+      "status": "normal",
+      "specialties": [
+        "Pediatrics",
+        "Gynecology",
+        "Cardiology",
+        "Neurology",
+        "Orthopedics",
+        "General Medicine"
+      ],
+      "icuBeds": 4,
+      "icuOccupied": 2,
+      "emergency24x7": true,
+      "dataLabel": "DEMO DATA \u2014 confirm with hospital",
+      "lastUpdated": "Demo seed record"
+    },
+    {
+      "id": 6,
+      "name": "CHC Bakshi Ka Talab",
+      "type": "chc",
+      "lat": 26.9102,
+      "lng": 80.991,
+      "load": 89,
+      "queue": 36,
+      "waitTime": 40,
+      "doctors": 6,
+      "beds": 45,
+      "bedsOccupied": 40,
+      "medicines": 55,
+      "status": "critical",
+      "specialties": [
+        "Gynecology",
+        "Cardiology",
+        "Neurology",
+        "Orthopedics",
+        "General Medicine",
+        "Pediatrics",
+        "Endocrinology"
+      ],
+      "icuBeds": 4,
+      "icuOccupied": 4,
+      "emergency24x7": true,
+      "dataLabel": "DEMO DATA \u2014 confirm with hospital",
+      "lastUpdated": "Demo seed record"
+    },
+    {
+      "id": 7,
+      "name": "CHC Malihabad",
+      "type": "chc",
+      "lat": 26.9201,
+      "lng": 80.721,
+      "load": 68,
+      "queue": 20,
+      "waitTime": 26,
+      "doctors": 5,
+      "beds": 40,
+      "bedsOccupied": 27,
+      "medicines": 80,
+      "status": "busy",
+      "specialties": [
+        "Cardiology",
+        "Neurology",
+        "Orthopedics",
+        "General Medicine",
+        "Pediatrics",
+        "Gynecology",
+        "Dermatology"
+      ],
+      "icuBeds": 3,
+      "icuOccupied": 2,
+      "emergency24x7": true,
+      "dataLabel": "DEMO DATA \u2014 confirm with hospital",
+      "lastUpdated": "Demo seed record"
+    },
+    {
+      "id": 8,
+      "name": "PHC Kakori",
+      "type": "phc",
+      "lat": 26.8691,
+      "lng": 80.7876,
+      "load": 32,
+      "queue": 5,
+      "waitTime": 7,
+      "doctors": 2,
+      "beds": 15,
+      "bedsOccupied": 5,
+      "medicines": 76,
+      "status": "normal",
+      "specialties": [
+        "Neurology",
+        "Orthopedics",
+        "General Medicine",
+        "Pediatrics",
+        "Gynecology",
+        "Cardiology",
+        "Pulmonology"
+      ],
+      "icuBeds": 2,
+      "icuOccupied": 1,
+      "emergency24x7": true,
+      "dataLabel": "DEMO DATA \u2014 confirm with hospital",
+      "lastUpdated": "Demo seed record"
+    },
+    {
+      "id": 9,
+      "name": "PHC Chinhat",
+      "type": "phc",
+      "lat": 26.882,
+      "lng": 81.0495,
+      "load": 58,
+      "queue": 13,
+      "waitTime": 17,
+      "doctors": 3,
+      "beds": 15,
+      "bedsOccupied": 9,
+      "medicines": 83,
+      "status": "busy",
+      "specialties": [
+        "Orthopedics",
+        "General Medicine",
+        "Pediatrics",
+        "Gynecology",
+        "Cardiology",
+        "Neurology",
+        "Gastroenterology"
+      ],
+      "icuBeds": 2,
+      "icuOccupied": 1,
+      "emergency24x7": true,
+      "dataLabel": "DEMO DATA \u2014 confirm with hospital",
+      "lastUpdated": "Demo seed record"
+    },
+    {
+      "id": 10,
+      "name": "PHC Itaunja",
+      "type": "phc",
+      "lat": 27.0098,
+      "lng": 80.8892,
+      "load": 22,
+      "queue": 3,
+      "waitTime": 5,
+      "doctors": 2,
+      "beds": 10,
+      "bedsOccupied": 2,
+      "medicines": 91,
+      "status": "normal",
+      "specialties": [
+        "General Medicine",
+        "Pediatrics",
+        "Gynecology",
+        "Cardiology",
+        "Neurology",
+        "Orthopedics",
+        "Oncology"
+      ],
+      "icuBeds": 2,
+      "icuOccupied": 0,
+      "emergency24x7": true,
+      "dataLabel": "DEMO DATA \u2014 confirm with hospital",
+      "lastUpdated": "Demo seed record"
+    },
+    {
+      "id": 11,
+      "name": "PHC Dewa",
+      "type": "phc",
+      "lat": 26.8305,
+      "lng": 81.028,
+      "load": 40,
+      "queue": 7,
+      "waitTime": 10,
+      "doctors": 2,
+      "beds": 12,
+      "bedsOccupied": 5,
+      "medicines": 68,
+      "status": "normal",
+      "specialties": [
+        "Pediatrics",
+        "Gynecology",
+        "Cardiology",
+        "Neurology",
+        "Orthopedics",
+        "General Medicine",
+        "ENT"
+      ],
+      "icuBeds": 2,
+      "icuOccupied": 1,
+      "emergency24x7": true,
+      "dataLabel": "DEMO DATA \u2014 confirm with hospital",
+      "lastUpdated": "Demo seed record"
+    },
+    {
+      "id": 12,
+      "name": "District Hospital Barabanki",
+      "type": "district",
+      "lat": 26.9272,
+      "lng": 81.1942,
+      "load": 92,
+      "queue": 70,
+      "waitTime": 58,
+      "doctors": 24,
+      "beds": 200,
+      "bedsOccupied": 184,
+      "medicines": 70,
+      "status": "critical",
+      "specialties": [
+        "Gynecology",
+        "Cardiology",
+        "Neurology",
+        "Orthopedics",
+        "General Medicine",
+        "Pediatrics"
+      ],
+      "icuBeds": 16,
+      "icuOccupied": 15,
+      "emergency24x7": true,
+      "dataLabel": "DEMO DATA \u2014 confirm with hospital",
+      "lastUpdated": "Demo seed record"
+    },
+    {
+      "id": 13,
+      "name": "CHC Haidergarh",
+      "type": "chc",
+      "lat": 26.6698,
+      "lng": 81.3187,
+      "load": 45,
+      "queue": 10,
+      "waitTime": 12,
+      "doctors": 5,
+      "beds": 30,
+      "bedsOccupied": 14,
+      "medicines": 95,
+      "status": "normal",
+      "specialties": [
+        "Cardiology",
+        "Neurology",
+        "Orthopedics",
+        "General Medicine",
+        "Pediatrics",
+        "Gynecology"
+      ],
+      "icuBeds": 2,
+      "icuOccupied": 1,
+      "emergency24x7": true,
+      "dataLabel": "DEMO DATA \u2014 confirm with hospital",
+      "lastUpdated": "Demo seed record"
+    },
+    {
+      "id": 14,
+      "name": "PHC Ramsanehi Ghat",
+      "type": "phc",
+      "lat": 26.78,
+      "lng": 81.25,
+      "load": 28,
+      "queue": 4,
+      "waitTime": 6,
+      "doctors": 2,
+      "beds": 10,
+      "bedsOccupied": 3,
+      "medicines": 87,
+      "status": "normal",
+      "specialties": [
+        "Neurology",
+        "Orthopedics",
+        "General Medicine",
+        "Pediatrics",
+        "Gynecology",
+        "Cardiology"
+      ],
+      "icuBeds": 2,
+      "icuOccupied": 1,
+      "emergency24x7": true,
+      "dataLabel": "DEMO DATA \u2014 confirm with hospital",
+      "lastUpdated": "Demo seed record"
+    },
+    {
+      "id": 15,
+      "name": "District Hospital Sitapur",
+      "type": "district",
+      "lat": 27.5633,
+      "lng": 80.6786,
+      "load": 78,
+      "queue": 52,
+      "waitTime": 48,
+      "doctors": 20,
+      "beds": 160,
+      "bedsOccupied": 125,
+      "medicines": 80,
+      "status": "busy",
+      "specialties": [
+        "Orthopedics",
+        "General Medicine",
+        "Pediatrics",
+        "Gynecology",
+        "Cardiology",
+        "Neurology"
+      ],
+      "icuBeds": 13,
+      "icuOccupied": 10,
+      "emergency24x7": true,
+      "dataLabel": "DEMO DATA \u2014 confirm with hospital",
+      "lastUpdated": "Demo seed record"
+    },
+    {
+      "id": 16,
+      "name": "CHC Biswan",
+      "type": "chc",
+      "lat": 27.4874,
+      "lng": 80.978,
+      "load": 36,
+      "queue": 7,
+      "waitTime": 9,
+      "doctors": 4,
+      "beds": 25,
+      "bedsOccupied": 9,
+      "medicines": 92,
+      "status": "normal",
+      "specialties": [
+        "General Medicine",
+        "Pediatrics",
+        "Gynecology",
+        "Cardiology",
+        "Neurology",
+        "Orthopedics"
+      ],
+      "icuBeds": 2,
+      "icuOccupied": 1,
+      "emergency24x7": true,
+      "dataLabel": "DEMO DATA \u2014 confirm with hospital",
+      "lastUpdated": "Demo seed record"
+    },
+    {
+      "id": 17,
+      "name": "PHC Sidhauli",
+      "type": "phc",
+      "lat": 27.2812,
+      "lng": 80.8341,
+      "load": 29,
+      "queue": 4,
+      "waitTime": 6,
+      "doctors": 2,
+      "beds": 10,
+      "bedsOccupied": 3,
+      "medicines": 87,
+      "status": "normal",
+      "specialties": [
+        "Pediatrics",
+        "Gynecology",
+        "Cardiology",
+        "Neurology",
+        "Orthopedics",
+        "General Medicine"
+      ],
+      "icuBeds": 2,
+      "icuOccupied": 1,
+      "emergency24x7": true,
+      "dataLabel": "DEMO DATA \u2014 confirm with hospital",
+      "lastUpdated": "Demo seed record"
+    },
+    {
+      "id": 18,
+      "name": "District Hospital Hardoi",
+      "type": "district",
+      "lat": 27.3952,
+      "lng": 80.1273,
+      "load": 62,
+      "queue": 24,
+      "waitTime": 22,
+      "doctors": 18,
+      "beds": 120,
+      "bedsOccupied": 74,
+      "medicines": 78,
+      "status": "busy",
+      "specialties": [
+        "Gynecology",
+        "Cardiology",
+        "Neurology",
+        "Orthopedics",
+        "General Medicine",
+        "Pediatrics"
+      ],
+      "icuBeds": 10,
+      "icuOccupied": 6,
+      "emergency24x7": true,
+      "dataLabel": "DEMO DATA \u2014 confirm with hospital",
+      "lastUpdated": "Demo seed record"
+    },
+    {
+      "id": 19,
+      "name": "PHC Sandila",
+      "type": "phc",
+      "lat": 27.0693,
+      "lng": 80.5198,
+      "load": 18,
+      "queue": 2,
+      "waitTime": 3,
+      "doctors": 2,
+      "beds": 10,
+      "bedsOccupied": 2,
+      "medicines": 96,
+      "status": "normal",
+      "specialties": [
+        "Cardiology",
+        "Neurology",
+        "Orthopedics",
+        "General Medicine",
+        "Pediatrics",
+        "Gynecology"
+      ],
+      "icuBeds": 2,
+      "icuOccupied": 0,
+      "emergency24x7": true,
+      "dataLabel": "DEMO DATA \u2014 confirm with hospital",
+      "lastUpdated": "Demo seed record"
+    }
+  ],
+  "ambulances": [
+    {
+      "id": "AMB-01",
+      "lat": 26.86,
+      "lng": 80.92,
+      "destination": "District Hospital Lucknow",
+      "eta": "8 min"
+    },
+    {
+      "id": "AMB-02",
+      "lat": 26.78,
+      "lng": 80.95,
+      "destination": "CHC Mohanlalganj",
+      "eta": "12 min"
+    },
+    {
+      "id": "AMB-03",
+      "lat": 27.01,
+      "lng": 80.85,
+      "destination": "PHC Itaunja",
+      "eta": "5 min"
+    },
+    {
+      "id": "AMB-04",
+      "lat": 26.95,
+      "lng": 81.15,
+      "destination": "District Hospital Barabanki",
+      "eta": "15 min"
+    }
+  ],
+  "stockouts": [
+    {
+      "id": "stock-1",
+      "medicine": "Paracetamol 500mg",
+      "hospital": "CHC Bakshi Ka Talab",
+      "currentStock": 120,
+      "daysLeft": 3,
+      "predictedNeed": 450,
+      "status": "critical"
+    },
+    {
+      "id": "stock-2",
+      "medicine": "Insulin Glargine",
+      "hospital": "District Hospital Barabanki",
+      "currentStock": 45,
+      "daysLeft": 5,
+      "predictedNeed": 180,
+      "status": "critical"
+    },
+    {
+      "id": "stock-3",
+      "medicine": "Amoxicillin 250mg",
+      "hospital": "PHC Dewa",
+      "currentStock": 200,
+      "daysLeft": 7,
+      "predictedNeed": 320,
+      "status": "warning"
+    },
+    {
+      "id": "stock-4",
+      "medicine": "ORS Sachets",
+      "hospital": "PHC Kakori",
+      "currentStock": 350,
+      "daysLeft": 8,
+      "predictedNeed": 500,
+      "status": "warning"
+    },
+    {
+      "id": "stock-5",
+      "medicine": "Metformin 500mg",
+      "hospital": "CHC Malihabad",
+      "currentStock": 180,
+      "daysLeft": 10,
+      "predictedNeed": 280,
+      "status": "normal"
+    },
+    {
+      "id": "stock-6",
+      "medicine": "Ciprofloxacin 500mg",
+      "hospital": "District Hospital Lucknow",
+      "currentStock": 90,
+      "daysLeft": 4,
+      "predictedNeed": 350,
+      "status": "critical"
+    },
+    {
+      "id": "stock-7",
+      "medicine": "Azithromycin 500mg",
+      "hospital": "CHC Haidergarh",
+      "currentStock": 250,
+      "daysLeft": 12,
+      "predictedNeed": 200,
+      "status": "normal"
+    },
+    {
+      "id": "stock-8",
+      "medicine": "Iron Folic Acid",
+      "hospital": "PHC Chinhat",
+      "currentStock": 60,
+      "daysLeft": 6,
+      "predictedNeed": 150,
+      "status": "warning"
+    }
+  ],
+  "alerts": [
+    {
+      "id": "alert-1",
+      "type": "critical",
+      "icon": "fas fa-exclamation-circle",
+      "title": "Critical Stockout Alert: Ciprofloxacin",
+      "desc": "District Hospital Lucknow will run out of Ciprofloxacin 500mg in 4 days. Nearest surplus: CHC Haidergarh (stock: 250).",
+      "time": "2 minutes ago",
+      "unread": true
+    },
+    {
+      "id": "alert-2",
+      "type": "critical",
+      "icon": "fas fa-hospital",
+      "title": "Capacity Overflow: District Hospital Barabanki",
+      "desc": "Current load at 91%. Queue backed up to 68 patients. 15 patients re-routed to CHC Haidergarh.",
+      "time": "15 minutes ago",
+      "unread": true
+    },
+    {
+      "id": "alert-3",
+      "type": "warning",
+      "icon": "fas fa-cloud-rain",
+      "title": "Weather Alert: Heavy Rain Expected",
+      "desc": "IMD predicts heavy rainfall in Sitapur district for next 3 days. Historical data suggests 25% patient surge for respiratory illness.",
+      "time": "1 hour ago",
+      "unread": true
+    },
+    {
+      "id": "alert-4",
+      "type": "info",
+      "icon": "fas fa-route",
+      "title": "Patient Rerouting Success",
+      "desc": "328 patients successfully rerouted today, reducing average wait time by 42 minutes across the district network.",
+      "time": "2 hours ago",
+      "unread": false
+    },
+    {
+      "id": "alert-5",
+      "type": "warning",
+      "icon": "fas fa-smog",
+      "title": "AQI Spike Alert: Lucknow Urban",
+      "desc": "AQI reached 285 (Very Poor). Predictive model estimates 18% increase in respiratory OPD visits over next 48 hours.",
+      "time": "3 hours ago",
+      "unread": true
+    },
+    {
+      "id": "alert-6",
+      "type": "success",
+      "icon": "fas fa-truck",
+      "title": "Medicine Transfer Completed",
+      "desc": "500 units of Paracetamol successfully transferred from CHC Biswan to CHC Bakshi Ka Talab.",
+      "time": "4 hours ago",
+      "unread": false
+    },
+    {
+      "id": "alert-7",
+      "type": "info",
+      "icon": "fas fa-phone",
+      "title": "IVR System Update",
+      "desc": "Bhashini voice module updated with Bhojpuri dialect support. 342 IVR calls processed today with 89% resolution rate.",
+      "time": "5 hours ago",
+      "unread": false
+    },
+    {
+      "id": "alert-8",
+      "type": "warning",
+      "icon": "fas fa-virus",
+      "title": "Dengue Cluster Detected",
+      "desc": "Spatio-temporal model detected emerging dengue cluster in Mohanlalganj area. Pre-emptive ORS & IV fluid allocation recommended.",
+      "time": "6 hours ago",
+      "unread": true
+    }
+  ],
+  "transfers": [
+    {
+      "id": "transfer-1",
+      "from": "CHC Biswan",
+      "fromType": "CHC",
+      "to": "CHC Bakshi Ka Talab",
+      "toType": "CHC",
+      "medicine": "Paracetamol 500mg \u00d7 500",
+      "status": "in-transit",
+      "eta": "2 hours"
+    },
+    {
+      "id": "transfer-2",
+      "from": "District Hospital Lucknow",
+      "fromType": "DH",
+      "to": "PHC Dewa",
+      "toType": "PHC",
+      "medicine": "Amoxicillin 250mg \u00d7 300",
+      "status": "pending",
+      "eta": "Tomorrow"
+    },
+    {
+      "id": "transfer-3",
+      "from": "CHC Haidergarh",
+      "fromType": "CHC",
+      "to": "District Hospital Barabanki",
+      "toType": "DH",
+      "medicine": "Ciprofloxacin 500mg \u00d7 200",
+      "status": "in-transit",
+      "eta": "4 hours"
+    },
+    {
+      "id": "transfer-4",
+      "from": "PHC Sandila",
+      "fromType": "PHC",
+      "to": "PHC Chinhat",
+      "toType": "PHC",
+      "medicine": "Iron Folic Acid \u00d7 100",
+      "status": "delivered",
+      "eta": "Completed"
+    }
+  ],
+  "doctors": [
+    {
+      "id": "DOC-001",
+      "hospitalId": 1,
+      "name": "Dr. Ananya Sharma",
+      "specialty": "Cardiology",
+      "qualification": "MD, DM Cardiology",
+      "availability": "Available today",
+      "nextSlot": "Today, 11:30 AM",
+      "experience": "12 years",
+      "consultationFee": 700,
+      "verified": false
+    },
+    {
+      "id": "DOC-002",
+      "hospitalId": 1,
+      "name": "Dr. Rahul Verma",
+      "specialty": "Neurology",
+      "qualification": "MD, DM Neurology",
+      "availability": "Unavailable today",
+      "nextSlot": "Tomorrow, 10:00 AM",
+      "experience": "9 years",
+      "consultationFee": 600,
+      "verified": false
+    },
+    {
+      "id": "DOC-003",
+      "hospitalId": 2,
+      "name": "Dr. Meera Singh",
+      "specialty": "Pediatrics",
+      "qualification": "MD Pediatrics",
+      "availability": "Available today",
+      "nextSlot": "Today, 1:00 PM",
+      "experience": "8 years",
+      "consultationFee": 500,
+      "verified": false
+    },
+    {
+      "id": "DOC-004",
+      "hospitalId": 3,
+      "name": "Dr. Arjun Gupta",
+      "specialty": "Orthopedics",
+      "qualification": "MS Orthopedics",
+      "availability": "Available today",
+      "nextSlot": "Today, 4:00 PM",
+      "experience": "11 years",
+      "consultationFee": 650,
+      "verified": false
+    },
+    {
+      "id": "DOC-005",
+      "hospitalId": 4,
+      "name": "Dr. Sana Khan",
+      "specialty": "General Medicine",
+      "qualification": "MD Medicine",
+      "availability": "Available today",
+      "nextSlot": "Today, 12:15 PM",
+      "experience": "7 years",
+      "consultationFee": 400,
+      "verified": false
+    },
+    {
+      "id": "DOC-006",
+      "hospitalId": 5,
+      "name": "Dr. Vikram Patel",
+      "specialty": "Cardiology",
+      "qualification": "MD, DM Cardiology",
+      "availability": "Unavailable today",
+      "nextSlot": "Monday, 9:30 AM",
+      "experience": "15 years",
+      "consultationFee": 900,
+      "verified": false
+    },
+    {
+      "id": "DOC-007",
+      "hospitalId": 6,
+      "name": "Dr. Priya Mishra",
+      "specialty": "Endocrinology",
+      "qualification": "MD Endocrinology",
+      "availability": "Available today",
+      "nextSlot": "Today, 2:00 PM",
+      "experience": "8 years",
+      "consultationFee": 550,
+      "verified": false
+    },
+    {
+      "id": "DOC-008",
+      "hospitalId": 7,
+      "name": "Dr. Karan Malhotra",
+      "specialty": "Dermatology",
+      "qualification": "MD Dermatology",
+      "availability": "Available today",
+      "nextSlot": "Today, 3:30 PM",
+      "experience": "8 years",
+      "consultationFee": 600,
+      "verified": false
+    },
+    {
+      "id": "DOC-009",
+      "hospitalId": 8,
+      "name": "Dr. Nisha Yadav",
+      "specialty": "Pulmonology",
+      "qualification": "MD Pulmonary Medicine",
+      "availability": "Unavailable today",
+      "nextSlot": "Tomorrow, 11:00 AM",
+      "experience": "8 years",
+      "consultationFee": 650,
+      "verified": false
+    },
+    {
+      "id": "DOC-010",
+      "hospitalId": 9,
+      "name": "Dr. Sameer Ali",
+      "specialty": "Gastroenterology",
+      "qualification": "DM Gastroenterology",
+      "availability": "Available today",
+      "nextSlot": "Today, 5:00 PM",
+      "experience": "8 years",
+      "consultationFee": 750,
+      "verified": false
+    },
+    {
+      "id": "DOC-011",
+      "hospitalId": 10,
+      "name": "Dr. Ritu Saxena",
+      "specialty": "Oncology",
+      "qualification": "MD Medical Oncology",
+      "availability": "Unavailable today",
+      "nextSlot": "Monday, 12:00 PM",
+      "experience": "8 years",
+      "consultationFee": 900,
+      "verified": false
+    },
+    {
+      "id": "DOC-012",
+      "hospitalId": 11,
+      "name": "Dr. Devansh Rao",
+      "specialty": "ENT",
+      "qualification": "MS ENT",
+      "availability": "Available today",
+      "nextSlot": "Today, 12:45 PM",
+      "experience": "8 years",
+      "consultationFee": 450,
+      "verified": false
+    }
+  ],
+  "blood_banks": [
+    {
+      "id": "BB-001",
+      "hospitalId": 1,
+      "name": "Balrampur Hospital Blood Centre",
+      "address": "Lucknow, Uttar Pradesh",
+      "phone": "Demo contact \u2014 verify locally",
+      "inventory": {
+        "A+": 12,
+        "A-": 3,
+        "B+": 8,
+        "B-": 2,
+        "AB+": 5,
+        "AB-": 1,
+        "O+": 15,
+        "O-": 2
+      },
+      "components": [
+        "Whole Blood",
+        "Packed Red Cells",
+        "Platelets",
+        "Fresh Frozen Plasma"
+      ],
+      "verified": false
+    },
+    {
+      "id": "BB-002",
+      "hospitalId": 2,
+      "name": "District Blood Bank \u2014 Sample",
+      "address": "Lucknow, Uttar Pradesh",
+      "phone": "Demo contact \u2014 verify locally",
+      "inventory": {
+        "A+": 4,
+        "A-": 0,
+        "B+": 2,
+        "B-": 0,
+        "AB+": 1,
+        "AB-": 0,
+        "O+": 7,
+        "O-": 1
+      },
+      "components": [
+        "Packed Red Cells",
+        "Platelets"
+      ],
+      "verified": false
+    },
+    {
+      "id": "BB-003",
+      "hospitalId": 3,
+      "name": "Community Blood Centre \u2014 Sample",
+      "address": "Barabanki, Uttar Pradesh",
+      "phone": "Demo contact \u2014 verify locally",
+      "inventory": {
+        "A+": 2,
+        "A-": 1,
+        "B+": 0,
+        "B-": 0,
+        "AB+": 2,
+        "AB-": 0,
+        "O+": 4,
+        "O-": 0
+      },
+      "components": [
+        "Packed Red Cells",
+        "Fresh Frozen Plasma"
+      ],
+      "verified": false
+    }
+  ],
+  "pharmacies": [
+    {
+      "id": "PH-001",
+      "hospitalId": 1,
+      "name": "Balrampur Hospital Pharmacy",
+      "address": "Lucknow, Uttar Pradesh",
+      "phone": "Demo contact \u2014 verify locally",
+      "openNow": true,
+      "medicines": [
+        {
+          "name": "Paracetamol 500mg",
+          "stock": 120,
+          "price": 12,
+          "prescriptionRequired": false
+        },
+        {
+          "name": "ORS Sachet",
+          "stock": 80,
+          "price": 20,
+          "prescriptionRequired": false
+        },
+        {
+          "name": "Amoxicillin 500mg",
+          "stock": 15,
+          "price": 65,
+          "prescriptionRequired": true
+        },
+        {
+          "name": "Insulin (sample listing)",
+          "stock": 0,
+          "price": 0,
+          "prescriptionRequired": true
+        }
+      ],
+      "verified": false
+    },
+    {
+      "id": "PH-002",
+      "hospitalId": 2,
+      "name": "City Care Pharmacy \u2014 Sample",
+      "address": "Lucknow, Uttar Pradesh",
+      "phone": "Demo contact \u2014 verify locally",
+      "openNow": true,
+      "medicines": [
+        {
+          "name": "Paracetamol 500mg",
+          "stock": 45,
+          "price": 10,
+          "prescriptionRequired": false
+        },
+        {
+          "name": "Cetirizine 10mg",
+          "stock": 32,
+          "price": 18,
+          "prescriptionRequired": false
+        },
+        {
+          "name": "Azithromycin 500mg",
+          "stock": 8,
+          "price": 55,
+          "prescriptionRequired": true
+        }
+      ],
+      "verified": false
+    },
+    {
+      "id": "PH-003",
+      "hospitalId": 3,
+      "name": "Community Pharmacy \u2014 Sample",
+      "address": "Barabanki, Uttar Pradesh",
+      "phone": "Demo contact \u2014 verify locally",
+      "openNow": false,
+      "medicines": [
+        {
+          "name": "ORS Sachet",
+          "stock": 25,
+          "price": 18,
+          "prescriptionRequired": false
+        },
+        {
+          "name": "Paracetamol 500mg",
+          "stock": 0,
+          "price": 0,
+          "prescriptionRequired": false
+        }
+      ],
+      "verified": false
+    }
+  ],
+  "appointments": [],
+  "emergency_requests": [],
+  "ambulance_locations": []
+}

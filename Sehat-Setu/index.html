@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SehatSetu — AI Healthcare Coordination</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loader-content">
+            <div class="pulse-ring"></div>
+            <div class="pulse-ring delay-1"></div>
+            <div class="pulse-ring delay-2"></div>
+            <i class="fas fa-heartbeat loader-icon"></i>
+            <h2 class="loader-title">SehatSetu</h2>
+            <p class="loader-subtitle">Initializing AI Healthcare Network...</p>
+            <div class="loader-bar">
+                <div class="loader-bar-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>SehatSetu</h1>
+                    <span class="logo-tagline">AI Healthcare</span>
+                </div>
+            </div>
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        </div>
+
+        <div class="sidebar-menu">
+            <div class="menu-section">
+                <span class="menu-label">Main</span>
+                <a href="#" class="menu-item active" data-page="dashboard">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="menu-item" data-page="map">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <span>Live Map</span>
+                </a>
+                <a href="#" class="menu-item" data-page="hospitals">
+                    <i class="fas fa-hospital"></i>
+                    <span>Hospitals</span>
+                </a>
+                <a href="#" class="menu-item" data-page="routing">
+                    <i class="fas fa-route"></i>
+                    <span>Patient Routing</span>
+                </a>
+            </div>
+            <div class="menu-section">
+                <span class="menu-label">AI & Analytics</span>
+                <a href="#" class="menu-item" data-page="predictions">
+                    <i class="fas fa-brain"></i>
+                    <span>Predictions</span>
+                </a>
+                <a href="#" class="menu-item" data-page="supply">
+                    <i class="fas fa-pills"></i>
+                    <span>Medicine Supply</span>
+                </a>
+                <a href="#" class="menu-item" data-page="analytics">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+            </div>
+            <div class="menu-section">
+                <span class="menu-label">Communication</span>
+                <a href="#" class="menu-item" data-page="voice">
+                    <i class="fas fa-phone-alt"></i>
+                    <span>Voice / IVR</span>
+                </a>
+                <a href="#" class="menu-item" data-page="alerts">
+                    <i class="fas fa-bell"></i>
+                    <span>Alerts</span>
+                    <span class="badge">5</span>
+                </a>
+            </div>
+            <div class="menu-section">
+                <span class="menu-label">Settings</span>
+                <a href="#" class="menu-item" data-page="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <div class="user-details">
+                    <span class="user-name">Dr. Admin</span>
+                    <span class="user-role">District Health Officer</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content" id="mainContent">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="search-box glass-input">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search hospitals, patients, medicines...">
+                </div>
+            </div>
+            <div class="topbar-right">
+                <div class="topbar-status">
+                    <span class="status-dot online"></span>
+                    <span>System Online</span>
+                </div>
+                <div class="weather-widget glass-mini">
+                    <i class="fas fa-cloud-sun"></i>
+                    <span>32°C</span>
+                    <span class="aqi-badge">AQI 142</span>
+                </div>
+                <button class="topbar-btn" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="topbar-btn notification-btn">
+                    <i class="fas fa-bell"></i>
+                    <span class="notif-badge">3</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Page Container -->
+        <div class="page-container" id="pageContainer">
+
+            <!-- ==================== DASHBOARD PAGE ==================== -->
+            <section class="page active" id="page-dashboard">
+                <div class="page-header">
+                    <div>
+                        <h2 class="page-title">Dashboard</h2>
+                        <p class="page-subtitle">Real-time healthcare network overview</p>
+                    </div>
+                    <div class="page-actions">
+                        <span class="live-indicator"><span class="live-dot"></span> Live</span>
+                        <span class="last-updated" id="lastUpdated">Updated: just now</span>
+                    </div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="kpi-grid">
+                    <div class="kpi-card glass-card">
+                        <div class="kpi-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                            <i class="fas fa-hospital"></i>
+                        </div>
+                        <div class="kpi-info">
+                            <span class="kpi-label">Active Facilities</span>
+                            <span class="kpi-value" id="kpiHospitals">247</span>
+                            <span class="kpi-change positive"><i class="fas fa-arrow-up"></i> 12 this week</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card glass-card">
+                        <div class="kpi-icon" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="kpi-info">
+                            <span class="kpi-label">Patients Today</span>
+                            <span class="kpi-value" id="kpiPatients">1,842</span>
+                            <span class="kpi-change positive"><i class="fas fa-arrow-up"></i> 8.3%</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card glass-card">
+                        <div class="kpi-icon" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                            <i class="fas fa-route"></i>
+                        </div>
+                        <div class="kpi-info">
+                            <span class="kpi-label">Patients Rerouted</span>
+                            <span class="kpi-value" id="kpiRerouted">328</span>
+                            <span class="kpi-change positive"><i class="fas fa-arrow-up"></i> 35% fewer waits</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card glass-card">
+                        <div class="kpi-icon" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
+                            <i class="fas fa-pills"></i>
+                        </div>
+                        <div class="kpi-info">
+                            <span class="kpi-label">Stockout Alerts</span>
+                            <span class="kpi-value" id="kpiStockouts">14</span>
+                            <span class="kpi-change negative"><i class="fas fa-exclamation-triangle"></i> 3 critical</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Grid -->
+                <div class="dashboard-grid">
+                    <!-- Patient Flow Chart -->
+                    <div class="glass-card chart-card span-2">
+                        <div class="card-header">
+                            <h3><i class="fas fa-chart-area"></i> Patient Flow — Last 24 Hours</h3>
+                            <div class="card-actions">
+                                <button class="btn-sm active">24H</button>
+                                <button class="btn-sm">7D</button>
+                                <button class="btn-sm">30D</button>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="patientFlowChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Hospital Load Distribution -->
+                    <div class="glass-card chart-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-chart-doughnut"></i> Load Distribution</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="loadDistChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Live Queue Status -->
+                    <div class="glass-card span-2">
+                        <div class="card-header">
+                            <h3><i class="fas fa-clock"></i> Live Queue Status</h3>
+                            <span class="live-indicator"><span class="live-dot"></span> Real-time</span>
+                        </div>
+                        <div class="queue-table-container">
+                            <table class="glass-table">
+                                <thead>
+                                    <tr>
+                                        <th>Hospital</th>
+                                        <th>Type</th>
+                                        <th>Queue</th>
+                                        <th>Wait Time</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="queueTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- AI Predictions Summary -->
+                    <div class="glass-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-brain"></i> AI Predictions</h3>
+                        </div>
+                        <div class="predictions-list" id="predictionsList">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== LIVE MAP PAGE ==================== -->
+            <section class="page" id="page-map">
+                <div class="page-header">
+                    <div>
+                        <h2 class="page-title">Live Healthcare Map</h2>
+                        <p class="page-subtitle">Real-time hospital capacity, routes & patient flow</p>
+                    </div>
+                    <div class="page-actions">
+                        <span class="status-badge warning" id="mapConnectionStatus" role="status" aria-live="polite">Connecting to CARTO...</span>
+                    </div>
+                </div>
+
+                <div class="map-container-wrapper">
+                    <!-- Map Controls -->
+                    <div class="map-controls glass-card">
+                        <h4><i class="fas fa-layer-group"></i> Map Layers</h4>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="layerHospitals" checked>
+                            <span class="slider"></span>
+                            <span class="toggle-label">Hospitals</span>
+                        </label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="layerHeatmap" checked>
+                            <span class="slider"></span>
+                            <span class="toggle-label">Patient Heatmap</span>
+                        </label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="layerRoutes" checked>
+                            <span class="slider"></span>
+                            <span class="toggle-label">Active Routes</span>
+                        </label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="layerAmbulance" checked>
+                            <span class="slider"></span>
+                            <span class="toggle-label">Ambulances</span>
+                        </label>
+                        <hr>
+                        <h4><i class="fas fa-filter"></i> Filter</h4>
+                        <select class="glass-select" id="mapFilter">
+                            <option value="all">All Facilities</option>
+                            <option value="district">District Hospitals</option>
+                            <option value="chc">CHC</option>
+                            <option value="phc">PHC</option>
+                        </select>
+                        <select class="glass-select" id="mapStatus">
+                            <option value="all">All Statuses</option>
+                            <option value="normal">Normal Load</option>
+                            <option value="busy">Busy</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                    </div>
+
+                    <!-- Map -->
+                    <div id="liveMap" class="live-map"></div>
+
+                    <!-- Map Info Panel -->
+                    <div class="map-info-panel glass-card" id="mapInfoPanel">
+                        <button class="close-panel" id="closeMapPanel"><i class="fas fa-times"></i></button>
+                        <div id="mapInfoContent">
+                            <p class="text-muted">Click a hospital marker for details</p>
+                        </div>
+                    </div>
+
+                    <!-- Map Legend -->
+                    <div class="map-legend glass-card">
+                        <h4>Legend</h4>
+                        <div class="legend-item"><span class="legend-dot" style="background:#43e97b;"></span> Normal (&lt;60%)</div>
+                        <div class="legend-item"><span class="legend-dot" style="background:#f7b731;"></span> Busy (60-85%)</div>
+                        <div class="legend-item"><span class="legend-dot" style="background:#f5576c;"></span> Critical (&gt;85%)</div>
+                        <div class="legend-item"><span class="legend-dot" style="background:#4facfe;"></span> Ambulance</div>
+                        <div class="legend-item"><span class="legend-line"></span> Patient Route</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== HOSPITALS PAGE ==================== -->
+            <section class="page" id="page-hospitals">
+                <div class="page-header">
+                    <div>
+                        <h2 class="page-title">Hospital Management</h2>
+                        <p class="page-subtitle">Monitor and manage all healthcare facilities</p>
+                    </div>
+                    <div class="page-actions">
+                        <button class="btn-primary"><i class="fas fa-plus"></i> Add Facility</button>
+                    </div>
+                </div>
+
+                <div class="hospital-filters glass-card">
+                    <div class="filter-group">
+                        <input type="text" class="glass-input-field" placeholder="Search hospitals..." id="hospitalSearch">
+                        <select class="glass-select" id="hospitalTypeFilter">
+                            <option value="all">All Types</option>
+                            <option value="district">District Hospital</option>
+                            <option value="chc">CHC</option>
+                            <option value="phc">PHC</option>
+                        </select>
+                        <select class="glass-select" id="hospitalStatusFilter">
+                            <option value="all">All Statuses</option>
+                            <option value="normal">Normal</option>
+                            <option value="busy">Busy</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="hospital-grid" id="hospitalGrid">
+                </div>
+            </section>
+
+            <!-- ==================== PATIENT ROUTING PAGE ==================== -->
+            <section class="page" id="page-routing">
+                <div class="page-header">
+                    <div>
+                        <h2 class="page-title">Intelligent Patient Routing</h2>
+                        <p class="page-subtitle">AI-powered routing to reduce wait times & travel</p>
+                    </div>
+                </div>
+
+                <div class="routing-layout">
+                    <div class="glass-card routing-form">
+                        <h3><i class="fas fa-user-injured"></i> Patient Details</h3>
+                        <div class="form-group">
+                            <label>ABHA ID / Name</label>
+                            <input type="text" class="glass-input-field" placeholder="Enter ABHA ID or patient name" id="patientAbhaId">
+                        </div>
+                        <div class="form-group">
+                            <label>Condition Type</label>
+                            <select class="glass-select" id="conditionType">
+                                <option value="general">General OPD</option>
+                                <option value="dental">Dental</option>
+                                <option value="eye">Ophthalmology</option>
+                                <option value="pediatric">Pediatric</option>
+                                <option value="gynecology">Gynecology</option>
+                                <option value="orthopedic">Orthopedic</option>
+                                <option value="emergency">Emergency</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Urgency Level</label>
+                            <div class="urgency-selector">
+                                <button class="urgency-btn active" data-level="low">Low</button>
+                                <button class="urgency-btn" data-level="medium">Medium</button>
+                                <button class="urgency-btn" data-level="high">High</button>
+                                <button class="urgency-btn" data-level="emergency">Emergency</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Patient Location</label>
+                            <input type="text" class="glass-input-field" placeholder="Village / Area name" id="patientLocation">
+                        </div>
+                        <div class="form-group">
+                            <label>Required Medicine</label>
+                            <input type="text" class="glass-input-field" placeholder="e.g., Paracetamol, Insulin" id="requiredMedicine">
+                        </div>
+                        <button class="btn-primary btn-full" id="findRouteBtn">
+                            <i class="fas fa-search-location"></i> Find Best Route
+                        </button>
+                    </div>
+
+                    <div class="glass-card routing-results" id="routingResults">
+                        <h3><i class="fas fa-route"></i> Recommended Routes</h3>
+                        <div class="routing-placeholder">
+                            <i class="fas fa-map-marked-alt"></i>
+                            <p>Enter patient details and click "Find Best Route" to get AI-optimized recommendations</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== PREDICTIONS PAGE ==================== -->
+            <section class="page" id="page-predictions">
+                <div class="page-header">
+                    <div>
+                        <h2 class="page-title">AI Predictions</h2>
+                        <p class="page-subtitle">7–14 day forecasts for patient surges & stockouts</p>
+                    </div>
+                    <div class="page-actions">
+                        <select class="glass-select" id="predictionHorizon">
+                            <option value="7">7 Day Forecast</option>
+                            <option value="14">14 Day Forecast</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="predictions-grid">
+                    <div class="glass-card span-2 chart-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-chart-line"></i> Patient Surge Forecast</h3>
+                            <div class="card-actions">
+                                <span class="confidence-badge">94% confidence</span>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="surgeForecastChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="glass-card chart-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-cloud-sun-rain"></i> Weather & AQI Impact</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="weatherImpactChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Spatio-Temporal Correlations -->
+                    <div class="glass-card span-3">
+                        <div class="card-header">
+                            <h3><i class="fas fa-project-diagram"></i> Spatio-Temporal Disease Correlations</h3>
+                        </div>
+                        <div class="correlations-grid" id="correlationsGrid">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== MEDICINE SUPPLY PAGE ==================== -->
+            <section class="page" id="page-supply">
+                <div class="page-header">
+                    <div>
+                        <h2 class="page-title">Medicine Supply Chain</h2>
+                        <p class="page-subtitle">Predictive stockout alerts & inter-hospital transfers</p>
+                    </div>
+                    <div class="page-actions">
+                        <button class="btn-primary"><i class="fas fa-exchange-alt"></i> Initiate Transfer</button>
+                    </div>
+                </div>
+
+                <div class="supply-grid">
+                    <div class="glass-card span-2">
+                        <div class="card-header">
+                            <h3><i class="fas fa-exclamation-triangle"></i> Stockout Predictions (Next 14 Days)</h3>
+                        </div>
+                        <div class="stockout-table-container">
+                            <table class="glass-table">
+                                <thead>
+                                    <tr>
+                                        <th>Medicine</th>
+                                        <th>Hospital</th>
+                                        <th>Current Stock</th>
+                                        <th>Days Left</th>
+                                        <th>Predicted Need</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="stockoutTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-chart-pie"></i> Stock Health</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="stockHealthChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Active Transfers -->
+                    <div class="glass-card span-3">
+                        <div class="card-header">
+                            <h3><i class="fas fa-truck"></i> Active Inter-Hospital Transfers</h3>
+                        </div>
+                        <div class="transfers-list" id="transfersList">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== ANALYTICS PAGE ==================== -->
+            <section class="page" id="page-analytics">
+                <div class="page-header">
+                    <div>
+                        <h2 class="page-title">Analytics & Impact</h2>
+                        <p class="page-subtitle">System performance and healthcare impact metrics</p>
+                    </div>
+                    <div class="page-actions">
+                        <button class="btn-primary"><i class="fas fa-download"></i> Export Report</button>
+                    </div>
+                </div>
+
+                <div class="analytics-grid">
+                    <!-- Impact KPIs -->
+                    <div class="glass-card impact-card">
+                        <div class="impact-value">35%</div>
+                        <div class="impact-label">Reduction in OPD Overcrowding</div>
+                        <div class="impact-bar"><div class="impact-bar-fill" style="width:35%;background:linear-gradient(90deg,#43e97b,#38f9d7);"></div></div>
+                    </div>
+                    <div class="glass-card impact-card">
+                        <div class="impact-value">42min</div>
+                        <div class="impact-label">Avg Wait Time Saved per Patient</div>
+                        <div class="impact-bar"><div class="impact-bar-fill" style="width:60%;background:linear-gradient(90deg,#4facfe,#00f2fe);"></div></div>
+                    </div>
+                    <div class="glass-card impact-card">
+                        <div class="impact-value">28km</div>
+                        <div class="impact-label">Avg Travel Distance Saved</div>
+                        <div class="impact-bar"><div class="impact-bar-fill" style="width:45%;background:linear-gradient(90deg,#667eea,#764ba2);"></div></div>
+                    </div>
+                    <div class="glass-card impact-card">
+                        <div class="impact-value">91%</div>
+                        <div class="impact-label">Medicine Availability Rate</div>
+                        <div class="impact-bar"><div class="impact-bar-fill" style="width:91%;background:linear-gradient(90deg,#f093fb,#f5576c);"></div></div>
+                    </div>
+
+                    <div class="glass-card span-2 chart-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-chart-bar"></i> Monthly Patient Routing Impact</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="impactChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="glass-card span-2 chart-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-chart-line"></i> System Efficiency Over Time</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="efficiencyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== VOICE / IVR PAGE ==================== -->
+            <section class="page" id="page-voice">
+                <div class="page-header">
+                    <div>
+                        <h2 class="page-title">Bhashini Voice & IVR</h2>
+                        <p class="page-subtitle">Multilingual voice access for rural patients</p>
+                    </div>
+                </div>
+
+                <div class="voice-grid">
+                    <div class="glass-card voice-demo">
+                        <h3><i class="fas fa-phone-alt"></i> IVR Simulator</h3>
+                        <div class="phone-mockup">
+                            <div class="phone-screen">
+                                <div class="phone-status-bar">
+                                    <span>Airtel</span>
+                                    <span>10:57 AM</span>
+                                </div>
+                                <div class="call-display">
+                                    <div class="caller-icon"><i class="fas fa-hospital"></i></div>
+                                    <p class="caller-name">SehatSetu IVR</p>
+                                    <p class="caller-number">1800-XXX-XXXX</p>
+                                    <p class="call-status" id="callStatus">Tap to simulate call</p>
+                                </div>
+                                <div class="ivr-messages" id="ivrMessages">
+                                </div>
+                                <div class="phone-keypad" id="phoneKeypad">
+                                    <button class="key-btn" data-key="1">1</button>
+                                    <button class="key-btn" data-key="2">2<br><small>ABC</small></button>
+                                    <button class="key-btn" data-key="3">3<br><small>DEF</small></button>
+                                    <button class="key-btn" data-key="4">4<br><small>GHI</small></button>
+                                    <button class="key-btn" data-key="5">5<br><small>JKL</small></button>
+                                    <button class="key-btn" data-key="6">6<br><small>MNO</small></button>
+                                    <button class="key-btn" data-key="7">7<br><small>PQRS</small></button>
+                                    <button class="key-btn" data-key="8">8<br><small>TUV</small></button>
+                                    <button class="key-btn" data-key="9">9<br><small>WXYZ</small></button>
+                                    <button class="key-btn" data-key="*">*</button>
+                                    <button class="key-btn" data-key="0">0</button>
+                                    <button class="key-btn" data-key="#">#</button>
+                                </div>
+                                <div class="call-actions">
+                                    <button class="call-btn call-start" id="startCallBtn"><i class="fas fa-phone"></i></button>
+                                    <button class="call-btn call-end" id="endCallBtn" style="display:none;"><i class="fas fa-phone-slash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <h3><i class="fas fa-language"></i> Supported Languages</h3>
+                        <div class="languages-grid">
+                            <div class="lang-card active"><span class="lang-flag">🇮🇳</span> Hindi</div>
+                            <div class="lang-card"><span class="lang-flag">🇮🇳</span> English</div>
+                            <div class="lang-card"><span class="lang-flag">🇮🇳</span> Tamil</div>
+                            <div class="lang-card"><span class="lang-flag">🇮🇳</span> Telugu</div>
+                            <div class="lang-card"><span class="lang-flag">🇮🇳</span> Bengali</div>
+                            <div class="lang-card"><span class="lang-flag">🇮🇳</span> Marathi</div>
+                            <div class="lang-card"><span class="lang-flag">🇮🇳</span> Gujarati</div>
+                            <div class="lang-card"><span class="lang-flag">🇮🇳</span> Kannada</div>
+                        </div>
+
+                        <h3 style="margin-top:1.5rem;"><i class="fas fa-chart-bar"></i> IVR Stats Today</h3>
+                        <div class="ivr-stats">
+                            <div class="ivr-stat">
+                                <span class="ivr-stat-value">342</span>
+                                <span class="ivr-stat-label">Total Calls</span>
+                            </div>
+                            <div class="ivr-stat">
+                                <span class="ivr-stat-value">89%</span>
+                                <span class="ivr-stat-label">Resolved</span>
+                            </div>
+                            <div class="ivr-stat">
+                                <span class="ivr-stat-value">1.2m</span>
+                                <span class="ivr-stat-label">Avg Duration</span>
+                            </div>
+                            <div class="ivr-stat">
+                                <span class="ivr-stat-value">267</span>
+                                <span class="ivr-stat-label">SMS Tokens Sent</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WhatsApp Integration -->
+                    <div class="glass-card">
+                        <h3><i class="fab fa-whatsapp"></i> WhatsApp Bot</h3>
+                        <div class="whatsapp-mockup">
+                            <div class="wa-header">
+                                <i class="fas fa-arrow-left"></i>
+                                <div class="wa-contact">
+                                    <div class="wa-avatar"><i class="fas fa-robot"></i></div>
+                                    <div>
+                                        <span class="wa-name">SehatSetu Bot</span>
+                                        <span class="wa-status">online</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="wa-chat" id="waChat">
+                                <div class="wa-msg received">
+                                    <p>🏥 नमस्ते! SehatSetu में आपका स्वागत है।</p>
+                                    <p>कृपया चुनें:</p>
+                                    <p>1️⃣ नजदीकी अस्पताल खोजें<br>2️⃣ कतार की स्थिति<br>3️⃣ दवा उपलब्धता<br>4️⃣ ABHA ID से जुड़ें</p>
+                                    <span class="wa-time">10:42 AM</span>
+                                </div>
+                                <div class="wa-msg sent">
+                                    <p>1</p>
+                                    <span class="wa-time">10:43 AM</span>
+                                </div>
+                                <div class="wa-msg received">
+                                    <p>📍 आपकी लोकेशन भेजें या पिन कोड दर्ज करें</p>
+                                    <span class="wa-time">10:43 AM</span>
+                                </div>
+                                <div class="wa-msg sent">
+                                    <p>226001</p>
+                                    <span class="wa-time">10:44 AM</span>
+                                </div>
+                                <div class="wa-msg received">
+                                    <p>🏥 आपके नजदीक 3 अस्पताल मिले:</p>
+                                    <p>✅ <b>CHC Mohanlalganj</b> — 4km, 12min wait<br>⚠️ <b>District Hospital</b> — 8km, 45min wait<br>✅ <b>PHC Kakori</b> — 6km, 5min wait</p>
+                                    <p>टोकन बुक करने के लिए अस्पताल नंबर भेजें</p>
+                                    <span class="wa-time">10:44 AM</span>
+                                </div>
+                            </div>
+                            <div class="wa-input">
+                                <input type="text" placeholder="Type a message..." id="waInput">
+                                <button class="wa-send" id="waSendBtn"><i class="fas fa-paper-plane"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== ALERTS PAGE ==================== -->
+            <section class="page" id="page-alerts">
+                <div class="page-header">
+                    <div>
+                        <h2 class="page-title">Alerts & Notifications</h2>
+                        <p class="page-subtitle">System alerts, stockout warnings & surge notifications</p>
+                    </div>
+                    <div class="page-actions">
+                        <button class="btn-secondary" id="markAllRead"><i class="fas fa-check-double"></i> Mark All Read</button>
+                    </div>
+                </div>
+
+                <div class="alerts-list" id="alertsList">
+                </div>
+            </section>
+
+            <!-- ==================== SETTINGS PAGE ==================== -->
+            <section class="page" id="page-settings">
+                <div class="page-header">
+                    <div>
+                        <h2 class="page-title">Settings</h2>
+                        <p class="page-subtitle">System configuration & preferences</p>
+                    </div>
+                </div>
+
+                <div class="settings-grid">
+                    <div class="glass-card">
+                        <h3><i class="fas fa-palette"></i> Appearance</h3>
+                        <div class="setting-item">
+                            <label>Dark Mode</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="darkModeToggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>Accent Color</label>
+                            <div class="color-options">
+                                <button class="color-btn active" style="background:#667eea;" data-color="blue"></button>
+                                <button class="color-btn" style="background:#f5576c;" data-color="red"></button>
+                                <button class="color-btn" style="background:#43e97b;" data-color="green"></button>
+                                <button class="color-btn" style="background:#f7b731;" data-color="orange"></button>
+                                <button class="color-btn" style="background:#a55eea;" data-color="purple"></button>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <label>Glass Intensity</label>
+                            <input type="range" min="0" max="100" value="60" class="glass-range" id="glassIntensity">
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <h3><i class="fas fa-plug"></i> Integrations</h3>
+                        <div class="setting-item">
+                            <div>
+                                <label>ABDM / ABHA</label>
+                                <small>Ayushman Bharat Digital Mission</small>
+                            </div>
+                            <span class="status-badge connected">Connected</span>
+                        </div>
+                        <div class="setting-item">
+                            <div>
+                                <label>e-Aushadhi</label>
+                                <small>Medicine supply chain</small>
+                            </div>
+                            <span class="status-badge connected">Connected</span>
+                        </div>
+                        <div class="setting-item">
+                            <div>
+                                <label>Bhashini API</label>
+                                <small>Language translation</small>
+                            </div>
+                            <span class="status-badge connected">Connected</span>
+                        </div>
+                        <div class="setting-item">
+                            <div>
+                                <label>Weather API</label>
+                                <small>IMD data feed</small>
+                            </div>
+                            <span class="status-badge connected">Connected</span>
+                        </div>
+                        <div class="setting-item">
+                            <div>
+                                <label>CCTV / QR Queue</label>
+                                <small>Camera-based queue detection</small>
+                            </div>
+                            <span class="status-badge warning">Partial</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <h3><i class="fas fa-bell"></i> Notification Preferences</h3>
+                        <div class="setting-item">
+                            <label>Critical Stockout Alerts</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>Patient Surge Warnings</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>Queue Overflow Alerts</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>Daily Summary Reports</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>WhatsApp Notifications</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <h3><i class="fas fa-info-circle"></i> About</h3>
+                        <div class="about-content">
+                            <div class="about-logo"><i class="fas fa-heartbeat"></i></div>
+                            <h2>SehatSetu v1.0</h2>
+                            <p class="text-muted">AI-Powered Predictive Healthcare Resource Coordination & Intelligent Patient Routing</p>
+                            <hr>
+                            <p><strong>Team:</strong> Gradient Descendants</p>
+                            <p>Harsh Trivedi • Tanishka Tripathi • Ayush Saxena</p>
+                            <p class="text-muted" style="margin-top:1rem;">13th Protocol: An AI Hackathon 2026</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Notification Toast -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="map-config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
